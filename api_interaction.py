@@ -6,7 +6,7 @@ token_url = "https://api.thuisarts.nl/oauth/token"
 
 # Replace with your client credentials
 client_id = "CFfdGB4cUO5pG8ZNjdZIW0_JjwOJKUEtWOl837vvass"
-client_secret = "IJIqpOWP60Ypb6oWLd8wIg"
+client_secret = "S8gQggXH1GFtA-0ijKyBFA"
 
 # Replace with the actual scope required by the API
 scope = "api"
@@ -28,26 +28,35 @@ if token_response.status_code == 200:
     access_token = token_response.json().get('access_token')
 
     # Use the obtained access token in subsequent requests
-    api_url = "https://api.thuisarts.nl/v/1/situations?_format=json"
+    api_url_base = "https://api.thuisarts.nl/v/1/situations?_format=json&page="
     headers = {
         'Authorization': f'Bearer {access_token}',
     }
 
-    # Make a GET request to the API using the obtained bearer token
-    api_response = requests.get(api_url, headers=headers)
+    # List to store all situations
+    all_situations = []
 
-    # Check the response from the API
-    if api_response.status_code == 200:
-        print(api_response.json())
-    else:
-        print(f"Error from API: {api_response.status_code}")
-        print(api_response.text)
+    # Loop through all pages (16 in this case)
+    for i in range(1, 17):  # Pages are 1-indexed
+        api_url = f"{api_url_base}{i}"
+        api_response = requests.get(api_url, headers=headers)
+
+        # Check the response from the API
+        if api_response.status_code == 200:
+            print(f"Processing data from page {i}")
+            page_data = api_response.json()
+
+            # Extract situations from the current page and append to the list
+            all_situations.extend(page_data.get('situations', []))
+
+        else:
+            print(f"Error from API on page {i}: {api_response.status_code}")
+            print(api_response.text)
+
+    # Save all situations to a single JSON file
+    with open('data/all_situations.json', 'w') as f:
+        json.dump(all_situations, f)
 
 else:
     print(f"Error obtaining bearer token: {token_response.status_code}")
     print(token_response.text)
-
-#save the json file
-with open('data.json', 'w') as f:
-    json.dump(api_response.json(), f)
-
