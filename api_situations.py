@@ -6,7 +6,7 @@ token_url = "https://api.thuisarts.nl/oauth/token"
 
 # Replace with your client credentials
 client_id = "CFfdGB4cUO5pG8ZNjdZIW0_JjwOJKUEtWOl837vvass"
-client_secret = "f_cdDtzh3xXjS-5Mi0xSmg"
+client_secret = "80z_ZJBXy_6sLpGHwWOinQ"
 
 # Replace with the actual scope required by the API
 scope = "api"
