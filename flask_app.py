@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, url_for, redirect
-from flaskext.markdown import Markdown
+from flask.ext.markdown import Markdown
 import html2text
 import re
 
