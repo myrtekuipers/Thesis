@@ -46,11 +46,14 @@ class EntityLinking():
         self.doc = self.nlp(docString)
         
         allCandidates = self.getAllCandidates() # Getting term candidates
+        
+        #sort the variations based on length
         for cand in allCandidates: cand.variations = sorted(cand.variations, key=len, reverse=True)
         allCandidates = sorted(allCandidates, key= lambda x: x.variations[0].start_char)
         self.AllCandidates = allCandidates
         db = DutchSNOMEDCT() # ICD10Dutch() # 
         self.AllCandidates = self.__reduceCandidates(allCandidates, db)
+        #now you have the term candidates and their variations
         
         #self.doc.ents = self.AllCandidates
         # Get the entity candidates from SNOMED for each of the term candidate
@@ -94,25 +97,31 @@ class EntityLinking():
         candidates = []
 
         def get_candidates(node, doc):
-
+            #first look at POS tags
+            #if the node is a noun or a proper noun and is not a pronoun and is not a tag, and it is not in the excluded candidates, then it is considered a term candidate
             if (node.pos_ in ["PROPN", "NOUN", "SYM"]) and node.pos_ not in ["PRON"] and not node._.is_tag and node.text not in self.excluded_candidates:
+                #take that term and the term one after it, as adjacent term candidates
                 term_candidates = TermCandidate(doc[node.i:node.i + 1]) #doc[node.i:node.i + 1] #
 
+                #then look at parsing trees
                 for child in node.children:
 
                     start_index = min(node.i, child.i)
                     end_index = max(node.i, child.i)
 
+                    #if the child is a compound (combination of words) or an adjective (e.g., large), then look at the subtree and if all the children are compound, then take the whole subtree as a term candidate
                     if child.dep_ == "compound" or child.dep_ == "amod":
                         subtree_tokens = list(child.subtree)
                         if all([c.dep_ == "compound" for c in subtree_tokens]):
                             start_index = min([c.i for c in subtree_tokens])
                         term_candidates.append(doc[start_index:end_index + 1])
 
+                        #if the child is not an adjective (so only a compound), then take the child as a term candidate
                         if not child.dep_ == "amod":
                             term_candidates.append(doc[start_index:start_index + 1])
                         excluded_children.append(child)
 
+                    #if the child is a preposition (e.g., van), then look at the subtree and if the child is a preposition and the word is van, then take the whole subtree as a term candidate
                     if child.dep_ == "prep" and child.text == "van":
                         end_index = max([c.i for c in child.subtree])
                         term_candidates.append(doc[start_index:end_index + 1])
@@ -135,6 +144,7 @@ class EntityLinking():
             new_terms = []
             for term1 in candidate1.variations:
                 for term2 in candidate2.variations:
+                    #look for the adjacent terms in the database
                     temp = term1.doc[term1.start:term2.end]
                     res = db.search(temp)
                     if len(res) > 0:# and temp.__len__() > max_length:
@@ -148,7 +158,7 @@ class EntityLinking():
                         # candidate1.variations = [] #candidate1.variations[index:] = []
                         # candidate2.variations = sorted(candidate2.variations, key=len, reverse=True)
                         
-                        
+            #if concatenated terms are found, then add them to the candidate2 and remove them from candidate1            
             if new_terms != []:
                 candidate2.variations.extend(new_terms)
                 candidate1.variations = []
@@ -162,6 +172,7 @@ class EntityLinking():
         return allCandidates
 
     def custom_tokenizer(self):
+        #custom since the default tokenizer does not handle the HTLM tags well
         nlp = self.nlp
         prefixes = [r'<[\w\s\d \"\.=]*>',] + nlp.Defaults.prefixes #['^<i>',]
         suffixes = [r'</[\w\d\s ]+>', ] + nlp.Defaults.suffixes #+ ['</i>$',]
