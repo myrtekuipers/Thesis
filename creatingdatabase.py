@@ -32,7 +32,7 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links2.sqlite3"
 
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
@@ -53,7 +53,7 @@ def main():
             """
 
     sql_create_tasks_table = """ CREATE TABLE IF NOT EXISTS Tasks (
-                id INTEGER PRIMARY KEY,
+                taskId INTEGER PRIMARY KEY,
                 situationId INTEGER,
                 situationTitle TEXT,
                 text TEXT,
@@ -63,34 +63,34 @@ def main():
 
 
     sql_create_term_candidates_table = """ CREATE TABLE IF NOT EXISTS TermCandidates (
-            id INTEGER PRIMARY KEY,
-            task_id INTEGER,
+            termId INTEGER PRIMARY KEY,
+            taskId INTEGER,
             term TEXT,
             startPosition INTEGER,
             endPosition INTEGER,
-            FOREIGN KEY (task_id) REFERENCES Tasks(id)
+            FOREIGN KEY (taskId) REFERENCES Tasks(taskId)
             );
             """
 
     sql_create_snomed_links_table = """ CREATE TABLE IF NOT EXISTS SNOMEDLinks (
-            id INTEGER PRIMARY KEY,
-            term_id INTEGER,
+            snomedlinkId INTEGER PRIMARY KEY,
+            termId INTEGER,
             conceptId TEXT,
             descriptionId TEXT,
             typeId TEXT,
             concept TEXT,
             similarity REAL,
-            FOREIGN KEY (term_id) REFERENCES TermCandidates(id)
+            FOREIGN KEY (termId) REFERENCES TermCandidates(termId)
             );
             """
 
     sql_create_db_links_table = """ CREATE TABLE IF NOT EXISTS DBLinks (
-            id INTEGER PRIMARY KEY,
-            snomed_id INTEGER,
+            linkId INTEGER PRIMARY KEY,
+            snomedlinkId INTEGER,
             icpc TEXT,
             icpcTerm TEXT,
             situationId INTEGER,
-            FOREIGN KEY (snomed_id) REFERENCES SNOMEDLinks(id)
+            FOREIGN KEY (snomedlinkId) REFERENCES SNOMEDLinks(snomedlinkId)
             );
             """
 
