@@ -50,34 +50,7 @@ def insert_tasks(conn):
         conn.commit()
         return cur.lastrowid
     
-# def insert_termcandidates(conn):
-#     with open('data/task_data.csv', 'r') as file:
-#         content = csv.reader(file)
-#         next(content)
-#         first_row = next(content) 
-            
-#         text = first_row[2]
-
-#         el = EntityLinking(text)
-
-#         last_row_id = 0
-#         for candidate in el.AllCandidates:
-#             term = candidate.variations[candidate.match_variation].text
-#             startPosition = candidate.variations[candidate.match_variation].start_char
-#             endPosition = candidate.variations[candidate.match_variation].end_char
-#             content1 = (taskId, term, startPosition, endPosition)
-
-#             sql = ''' INSERT OR IGNORE INTO TermCandidates(taskId, term, startPosition, endPosition)
-#                     VALUES(?,?,?,?) '''
-        
-#             cur = conn.cursor()
-#             cur.execute(sql, content1)
-#             conn.commit()
-#             last_row_id = cur.lastrowid 
-        
-#         return last_row_id
-    
-def insert_termcandidates(conn):
+def insert_terms_links(conn):
     with open('data/task_data.csv', 'r') as file:
         content = csv.reader(file)
         next(content)
@@ -107,22 +80,20 @@ def insert_termcandidates(conn):
             
                 cur.execute(sql, content1)
                 last_row_id = cur.lastrowid 
-        
+
+                for index, snomed_link in enumerate(candidate.SimilarEntities):
+                    content2 = (last_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, candidate.similarities[index])
+                    sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, similarity)
+                            VALUES(?,?,?,?) '''
+                    cur.execute(sql, content2)
+                    conn.commit()
+
         return last_row_id
 
 
-# def update_subject(conn, subject):
-#     sql = ''' UPDATE subjects
-#               SET subjectTitle = ? ,
-#                   subjectURL = ?,
-#                   subjectICPC = ?
-#               WHERE subjectId = ?'''
-#     cur = conn.cursor()
-#     cur.execute(sql, subject)
-#     conn.commit()
 
 # def delete_rows(conn):
-#     sql = 'DELETE FROM tasks WHERE rowId >= 1575'
+#     sql = 'DELETE FROM termcandidates WHERE rowId >= 153'
 #     cur = conn.cursor()
 #     cur.execute(sql)
 #     conn.commit()
@@ -134,7 +105,7 @@ def insert_termcandidates(conn):
 #     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links1.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links5.sqlite3"
 
     conn = create_connection(database)
     with conn:
@@ -142,7 +113,9 @@ def main():
         # insert_situations(conn)
         # insert_tasks(conn)
         #insert_termcandidates(conn)
-        insert_snomed_links(conn)
+        #insert_terms_links(conn)
+        #delete_rows(conn)
+        pass
 
 if __name__ == '__main__':
     main()

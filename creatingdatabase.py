@@ -32,7 +32,7 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links2.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links5.sqlite3"
 
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
@@ -77,12 +77,11 @@ def main():
             termId INTEGER,
             conceptId TEXT,
             descriptionId TEXT,
-            typeId TEXT,
-            concept TEXT,
             similarity REAL,
             FOREIGN KEY (termId) REFERENCES TermCandidates(termId)
             );
             """
+    #heb nu typeID, concept geskipt hierboven, maar moet er eigenlijk wel bij
 
     sql_create_db_links_table = """ CREATE TABLE IF NOT EXISTS DBLinks (
             linkId INTEGER PRIMARY KEY,

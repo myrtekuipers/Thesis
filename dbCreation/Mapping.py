@@ -50,6 +50,7 @@ class Mapping:
             snomed_codes.append(ICD10Concept(t[1]))
         return snomed_codes
 
+    
 ################## Main 
 if __name__ == "__main__":
     map = Mapping()

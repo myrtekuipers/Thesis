@@ -252,7 +252,7 @@ class SNOMEDDescription():
             self.icd10 = Mapping().SNOMED2ICD(self.ConceptId)
 
         return self.icd10
-    
+
     def get_guidelines(self):
         if self.icd10 == None:
             self.get_icd10()
