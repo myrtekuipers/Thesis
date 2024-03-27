@@ -56,16 +56,17 @@ def insert_terms_links(conn):
     with open('data/task_data.csv', 'r') as file:
         content = csv.reader(file)
         next(content)
-        first_row = next(content) 
+        next(content)
+        second_row = next(content) 
             
-        text = first_row[2] #get the text from the situations page
+        text = second_row[2] #get the text from the situations page
 
         el = EntityLinking(text)
 
         last_row_id = 0
         cur = conn.cursor()
 
-        situation_title = first_row[1]  # Assuming situationTitle is in the second column
+        situation_title = second_row[1]  # Assuming situationTitle is in the second column
         cur.execute("SELECT taskId FROM tasks WHERE situationTitle = ?", (situation_title,))
         task_id_row = cur.fetchone()
         if task_id_row:
@@ -88,6 +89,7 @@ def insert_terms_links(conn):
                     sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, concept, type, similarity)
                             VALUES(?,?,?,?,?,?) '''
                     cur.execute(sql, content2)
+                    last_row_id = cur.lastrowid 
                     conn.commit()
 
                     #check if that snomed link has a corresponding ICPC code
@@ -120,16 +122,16 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/finaldb2.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test1.sqlite3"
 
     conn = create_connection(database)
     with conn:
-        # insert_subjects(conn)
-        # insert_situations(conn)
-        # insert_tasks(conn)
-        # insert_terms_links(conn)
+        insert_subjects(conn)
+        insert_situations(conn)
+        insert_tasks(conn)
+        insert_terms_links(conn)
         #delete_all_tables(conn)
-        pass
+        
         
 
 if __name__ == '__main__':
