@@ -60,7 +60,7 @@ class EntityLinking():
         for term_candidate in self.AllCandidates:
             term_candidate.getEntityCandidates() # Getting the Entity Candidates 
             term_candidate.getEntitySelection()
-            print(term_candidate.SimilarEntities[0].get_span(), "==>", term_candidate.SimilarEntities[0], term_candidate.similarities[0]) if len(term_candidate.SimilarEntities) > 0 else None
+            #print(term_candidate.SimilarEntities[0].get_span(), "==>", term_candidate.SimilarEntities[0], term_candidate.similarities[0]) if len(term_candidate.SimilarEntities) > 0 else None
 
         self.AllCandidates = [item for item in self.AllCandidates if len(item.SimilarEntities) > 0]
         

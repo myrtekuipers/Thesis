@@ -2,7 +2,9 @@ import sqlite3
 from sqlite3 import Error
 import csv
 from EL import EntityLinking
-import DutchSnomed
+from DutchSnomed import *
+from DutchICPC import *
+from mapping2 import *
 
 
 def create_connection(db_file):
@@ -56,7 +58,7 @@ def insert_terms_links(conn):
         next(content)
         first_row = next(content) 
             
-        text = first_row[2]
+        text = first_row[2] #get the text from the situations page
 
         el = EntityLinking(text)
 
@@ -82,40 +84,53 @@ def insert_terms_links(conn):
                 last_row_id = cur.lastrowid 
 
                 for index, snomed_link in enumerate(candidate.SimilarEntities):
-                    content2 = (last_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, candidate.similarities[index])
-                    sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, similarity)
-                            VALUES(?,?,?,?) '''
+                    content2 = (last_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, snomed_link.Term, snomed_link.TypeCode, candidate.similarities[index])
+                    sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, concept, type, similarity)
+                            VALUES(?,?,?,?,?,?) '''
                     cur.execute(sql, content2)
                     conn.commit()
 
+                    #check if that snomed link has a corresponding ICPC code
+                    icpc = Mapping().SNOMED2ICPC(snomed_link.ConceptId)
+                    if icpc:
+                        for code in icpc:
+                            icpcTerm = ICPCDutch().search(code)
+                            situationId = ICPCDutch().search_situations(code)
+                            situationIds = situationId if situationId else None
+                            for situationId in situationIds if situationIds else [None]:
+                                content3 = (last_row_id, code, icpcTerm, situationId)
+                                sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId)
+                                        VALUES(?,?,?,?) '''
+                                cur.execute(sql, content3)
+                                conn.commit()
+
         return last_row_id
-
-
 
 # def delete_rows(conn):
 #     sql = 'DELETE FROM termcandidates WHERE rowId >= 153'
 #     cur = conn.cursor()
 #     cur.execute(sql)
 #     conn.commit()
-
-# def delete_all_rows(conn):
-#     sql = 'DELETE FROM termcandidates'
-#     cur = conn.cursor()
-#     cur.execute(sql)
-#     conn.commit()
+    
+def delete_all_tables(conn):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM termcandidates")
+    cur.execute("DELETE FROM snomedlinks")
+    cur.execute("DELETE FROM dblinks")
+    conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links5.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/finaldb2.sqlite3"
 
     conn = create_connection(database)
     with conn:
         # insert_subjects(conn)
         # insert_situations(conn)
         # insert_tasks(conn)
-        #insert_termcandidates(conn)
-        #insert_terms_links(conn)
-        #delete_rows(conn)
+        # insert_terms_links(conn)
+        #delete_all_tables(conn)
         pass
+        
 
 if __name__ == '__main__':
     main()

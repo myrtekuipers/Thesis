@@ -1,13 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 
-
 def create_connection(db_file):
-    """ create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
     conn = None
     try:
         conn = sqlite3.connect(db_file)
@@ -19,11 +13,6 @@ def create_connection(db_file):
 
 
 def create_table(conn, create_table_sql):
-    """ create a table from the create_table_sql statement
-    :param conn: Connection object
-    :param create_table_sql: a CREATE TABLE statement
-    :return:
-    """
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
@@ -32,7 +21,7 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/links5.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/finaldb2.sqlite3"
 
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
@@ -43,8 +32,8 @@ def main():
         """
 
     sql_create_situations_table = """ CREATE TABLE IF NOT EXISTS Situations (
-                subjectId INTEGER,
                 situationId INTEGER PRIMARY KEY,
+                subjectId INTEGER,
                 situationTitle TEXT,
                 situationURL TEXT,
                 situationICPC TEXT,
@@ -75,13 +64,14 @@ def main():
     sql_create_snomed_links_table = """ CREATE TABLE IF NOT EXISTS SNOMEDLinks (
             snomedlinkId INTEGER PRIMARY KEY,
             termId INTEGER,
-            conceptId TEXT,
-            descriptionId TEXT,
+            conceptId INTEGER,
+            descriptionId INTEGER,
+            concept TEXT,
+            type INTEGER,
             similarity REAL,
             FOREIGN KEY (termId) REFERENCES TermCandidates(termId)
             );
             """
-    #heb nu typeID, concept geskipt hierboven, maar moet er eigenlijk wel bij
 
     sql_create_db_links_table = """ CREATE TABLE IF NOT EXISTS DBLinks (
             linkId INTEGER PRIMARY KEY,
@@ -90,13 +80,12 @@ def main():
             icpcTerm TEXT,
             situationId INTEGER,
             FOREIGN KEY (snomedlinkId) REFERENCES SNOMEDLinks(snomedlinkId)
+            FOREIGN KEY (situationId) REFERENCES Situations(situationId)
             );
             """
 
-    # create a database connection
     conn = create_connection(database)
 
-    # create tables
     if conn is not None:
         create_table(conn, sql_create_subjects_table)
 

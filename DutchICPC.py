@@ -1,35 +1,55 @@
 import sqlite3
 from sqlite3 import Error
 
-class ICPCDutch():
+class ICPCDutch:
 
     def __init__(self):
         pass
 
     def __getitem__(self, code):
-        return ICPCConcept(code)
-    
-    def connectToSql(self, db_file):
-        conn = None
-        try:
-            conn = sqlite3.connect(db_file)
-        except Error as e:
-            print(e)
-
-        return conn
+        return self.search(code)
     
     def search(self, code):
-        sql = ''' Select finalcodes.code FROM finalcodes WHERE finalcodes.code = ? '''
-        cur = conn.cursor()
-        cur.execute(sql, (code,))
+        sql = '''SELECT finalcodes.tekst FROM finalcodes WHERE finalcodes.code = ?'''
+        try:
+            database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/icpc.sqlite3"
+            conn = sqlite3.connect(database)
+            cur = conn.cursor()
+            cur.execute(sql, (code,))
+            result = cur.fetchone()
+            if result:
+                return result[0]  # Return the text corresponding to the code
+            else:
+                return None 
+        except Error as e:
+            print("Error while querying the database1:", e)
+            return None 
 
-class ICPCConcept():
-    pass
+    def search_situations(self, code):
+        sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ?'''
+        # sql1 = '''
+        # SELECT situationId 
+        # FROM Situations 
+        # WHERE ',' || ? || ',' LIKE '%,' || situationICPC || ',%'
+        # '''
 
+        try:
+            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/finaldb2.sqlite3"
+            conn = sqlite3.connect(database1)
+            cur = conn.cursor()
+            cur.execute(sql1, (code,))
+            result = cur.fetchall()
+            if result:
+                return [row[0] for row in result]
+            else:
+                return None  # Code not found
+        except Error as e:
+            print("Error while querying the database:", e)
+            return None  # Return None in case of error
 
-    pass
 
 if __name__ == "__main__":
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/icpc.sqlite3"
 
-
+    icpc = ICPCDutch()
+    code = "F73"
+    result = icpc.search[code]
