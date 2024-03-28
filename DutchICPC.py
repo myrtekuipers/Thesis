@@ -26,18 +26,15 @@ class ICPCDutch:
             return None 
 
     def search_situations(self, code):
-        sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ?'''
-        # sql1 = '''
-        # SELECT situationId 
-        # FROM Situations 
-        # WHERE ',' || ? || ',' LIKE '%,' || situationICPC || ',%'
-        # '''
+        #sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ?'''
+        sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ? OR situationICPC LIKE ?'''
+
 
         try:
-            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test1.sqlite3"
+            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test3.sqlite3"
             conn = sqlite3.connect(database1)
             cur = conn.cursor()
-            cur.execute(sql1, (code,))
+            cur.execute(sql1, (code, '%' + code + '%'))
             result = cur.fetchall()
             if result:
                 return [row[0] for row in result]

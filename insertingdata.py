@@ -82,10 +82,12 @@ def insert_terms_links(conn):
                         VALUES(?,?,?,?) '''
             
                 cur.execute(sql, content1)
-                last_row_id = cur.lastrowid 
+                #last_row_id = cur.lastrowid
+                term_row_id = cur.lastrowid
+                conn.commit()
 
                 for index, snomed_link in enumerate(candidate.SimilarEntities):
-                    content2 = (last_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, snomed_link.Term, snomed_link.TypeCode, candidate.similarities[index])
+                    content2 = (term_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, snomed_link.Term, snomed_link.TypeCode, candidate.similarities[index])
                     sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, concept, type, similarity)
                             VALUES(?,?,?,?,?,?) '''
                     cur.execute(sql, content2)
@@ -122,13 +124,13 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test1.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test3.sqlite3"
 
     conn = create_connection(database)
     with conn:
-        insert_subjects(conn)
-        insert_situations(conn)
-        insert_tasks(conn)
+        # insert_subjects(conn)
+        # insert_situations(conn)
+        # insert_tasks(conn)
         insert_terms_links(conn)
         #delete_all_tables(conn)
         
