@@ -21,7 +21,7 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test3.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test2.sqlite3"
 
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
@@ -66,7 +66,6 @@ def main():
             conceptId INTEGER,
             descriptionId INTEGER,
             concept TEXT,
-            type INTEGER,
             similarity REAL,
             FOREIGN KEY (termId) REFERENCES TermCandidates(termId)
             );
@@ -87,15 +86,10 @@ def main():
 
     if conn is not None:
         create_table(conn, sql_create_subjects_table)
-
         create_table(conn, sql_create_situations_table)
-
         create_table(conn, sql_create_tasks_table)
-
         create_table(conn, sql_create_term_candidates_table)
-
         create_table(conn, sql_create_snomed_links_table)
-
         create_table(conn, sql_create_db_links_table)
     else:
         print("Error! cannot create the database connection.")

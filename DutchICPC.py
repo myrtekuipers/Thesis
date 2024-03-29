@@ -31,7 +31,7 @@ class ICPCDutch:
 
 
         try:
-            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test3.sqlite3"
+            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test2.sqlite3"
             conn = sqlite3.connect(database1)
             cur = conn.cursor()
             cur.execute(sql1, (code, '%' + code + '%'))

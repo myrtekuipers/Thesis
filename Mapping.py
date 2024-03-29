@@ -1,6 +1,6 @@
 import sqlite3
 
-database= r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/mapping1.sqlite3"
+database= r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/mapping.sqlite3"
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
 
