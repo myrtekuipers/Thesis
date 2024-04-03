@@ -51,16 +51,19 @@ cursor.execute('''
 
 related_subject_data = cursor.fetchall() 
 
+#add the subject nodes corresponding to the related situations from dblinks
 for related_subject_id, related_subjectTitle, related_subjectICPC in related_subject_data:
     G.add_node(related_subject_id)
     G.nodes[related_subject_id]['subjectTitle'] = related_subjectTitle
     G.nodes[related_subject_id]['subjectICPC'] = related_subjectICPC
     G.add_edge(subject_id, related_subject_id)
 
-# #draw the graph
+conn.close()
+
+#draw the graph
 pos = nx.spring_layout(G)  
 
-# #add the title and icpc for every node
+# add the title and icpc for every node
 node_labels = {}
 for node in G.nodes:
     label = f"{node}\n"
@@ -70,34 +73,31 @@ for node in G.nodes:
         label += f"ICPC: {G.nodes[node]['subjectICPC']}\n"
     node_labels[node] = label
 
-# Define color mapping based on ICPC codes
+# define color mapping based on ICPC codes
 color_mapping = {
     range(1, 30): 'blue',    # Symptomen en klachten
-    range(30, 50): 'red',    # Diagnostische/preventieve verrichtingen
+    range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
     range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
     range(60, 62): 'yellow', # Uitslagen van onderzoek
-    62: 'orange',            # Administratieve verrichtingen
+    62: 'cyan',            # Administratieve verrichtingen
     range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
-    range(70, 100): 'cyan'   # Omschreven ziekten
+    range(70, 100): 'red'   # Omschreven ziekten
 }
 
-# Assign colors to nodes based on their ICPC values
+# assign colors to nodes based on their ICPC values
 node_colors = []
 for node in G.nodes:
     if 'subjectICPC' in G.nodes[node]:
-        icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",")  # Split ICPC codes if there are multiple
-        colors = []  # Use a list to store all colors for multiple ICPC codes
+        icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",")  # split ICPC codes if there are multiple and delete the spaces for workability
+        colors = []  # use a list to store all colors for multiple ICPC codes
         for icpc_value in icpc_values:
-            if icpc_value == '':
+            if icpc_value == '': #if there is no ICPC code assigned, continue
                 continue
             for key, value in color_mapping.items():
                 if isinstance(key, range):
                     if int(icpc_value[1:3]) in key:
                         colors.append(value)
-                else:
-                    if int(icpc_value[1:3]) == key:
-                        colors.append(value)
-        # Determine the most common color for the node
+        # if there are multiple colors (multiple ICPC codes), determine the most common color for the node
         if colors:
             most_common_colors = Counter(colors).most_common()  # Get all most common colors
             most_common_color, count = most_common_colors[0]  # Get the first most common color
@@ -107,14 +107,10 @@ for node in G.nodes:
                 node_colors.append(most_common_color)  # Use the most common color otherwise
         else:
             node_colors.append('gray')  # Default color if no ICPC value is available
-    else:
-        node_colors.append('gray')  # Default color if ICPC value is not available
 
-# Draw the graph with node colors
 nx.draw(G, pos, with_labels=False, node_color=node_colors)
 
-# Add labels to the graph
+# add labels to the graph
 nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
 
-# Show the graph
 plt.show()
