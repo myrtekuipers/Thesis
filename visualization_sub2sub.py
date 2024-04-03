@@ -3,11 +3,12 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-conn = sqlite3.connect('data/test2.sqlite3')
+conn = sqlite3.connect('data/diabetes_coloncancer.sqlite3')
 cursor = conn.cursor()
 
 # get the subject info corresponding to the given task ID
-task_id = 452
+#67 is colon cancer, 452 is diabetes type 2
+task_id = 67
 cursor.execute('''
     SELECT sub.subjectId, sub.subjectTitle, sub.subjectICPC
     FROM subjects sub

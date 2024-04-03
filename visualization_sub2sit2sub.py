@@ -3,11 +3,11 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-conn = sqlite3.connect('data/test2.sqlite3')
+conn = sqlite3.connect('data/diabetes_coloncancer.sqlite3')
 cursor = conn.cursor()
 
 # get the subject info corresponding to the given task ID
-task_id = 452
+task_id = 67
 cursor.execute('''
     SELECT sub.subjectId, sub.subjectTitle, sub.subjectICPC
     FROM subjects sub
@@ -45,7 +45,7 @@ for situation_id, situationTitle, situationICPC in related_situation_data:
     G.add_node(situation_id)
     G.nodes[situation_id]['situationTitle'] = situationTitle
     G.nodes[situation_id]['situationICPC'] = situationICPC
-    G.add_edge(task_id, situation_id)
+    G.add_edge(subject_id, situation_id)
 
 # get the subject ids corresponding to the related_situation ids
 for situation_id, _, _ in related_situation_data:

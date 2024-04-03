@@ -19,7 +19,7 @@ def create_connection(db_file):
 def insert_subjects(conn):
     with open('data/subject_data.csv', 'r') as file:
         content = csv.reader(file)
-        next(content)  # Skip header row
+        next(content) 
         sql = ''' INSERT OR IGNORE INTO subjects(subjectId, subjectTitle, subjectURL, subjectICPC)
                   VALUES(?,?,?,?) '''
     
@@ -31,7 +31,7 @@ def insert_subjects(conn):
 def insert_situations(conn):
     with open('data/situation_data.csv', 'r') as file:
         content = csv.reader(file)
-        next(content)  # Skip header row
+        next(content)
         sql = ''' INSERT OR IGNORE INTO situations(subjectId, situationId, situationTitle, situationURL, situationICPC)
                   VALUES(?,?,?,?,?) '''
     
@@ -59,66 +59,8 @@ def find_row_by_situation_title(file_path, target_title):
             if row['situation_title'] == target_title:
                 return row
     return None
-    
-# def insert_terms_links(conn):
-#     # with open('data/task_data.csv', 'r') as file:
-#     #     content = csv.reader(file)
-#     #     next(content)
-#         # next(content)
-#         # second_row = next(content) 
 
-#         target_title = "Ik heb diabetes type 2"
-#         row = find_row_by_situation_title('data/task_data.csv', target_title)
-
-#         text = row['content_text'] 
-#         el = EntityLinking(text)
-
-#         last_row_id = 0
-#         cur = conn.cursor()
-
-#         situation_title = row['situation_title']
-#         cur.execute("SELECT taskId FROM tasks WHERE situationTitle = ?", (situation_title,))
-#         task_id_row = cur.fetchone()
-#         if task_id_row:
-#             task_id = task_id_row[0]
-
-#             for candidate in el.AllCandidates:
-#                 term = candidate.variations[candidate.match_variation].text
-#                 startPosition = candidate.variations[candidate.match_variation].start_char
-#                 endPosition = candidate.variations[candidate.match_variation].end_char
-#                 content1 = (task_id, term, startPosition, endPosition)
-
-#                 sql = ''' INSERT OR IGNORE INTO TermCandidates(taskId, term, startPosition, endPosition)
-#                         VALUES(?,?,?,?) '''
-            
-#                 cur.execute(sql, content1)
-#                 term_row_id = cur.lastrowid
-#                 conn.commit()
-
-#                 for index, snomed_link in enumerate(candidate.SimilarEntities):
-#                     content2 = (term_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, snomed_link.Term, candidate.similarities[index])
-#                     sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, concept, similarity)
-#                             VALUES(?,?,?,?,?) '''
-#                     cur.execute(sql, content2)
-#                     last_row_id = cur.lastrowid 
-#                     conn.commit()
-
-#                     icpc = Mapping().SNOMED2ICPC(snomed_link.ConceptId)
-#                     if icpc:
-#                         for code in icpc:
-#                             icpcTerm = ICPCDutch().search(code)
-#                             situationId = ICPCDutch().search_situations(code)
-#                             situationIds = situationId if situationId else None
-#                             for situationId in situationIds if situationIds else [None]:
-#                                 content3 = (last_row_id, code, icpcTerm, situationId)
-#                                 sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId)
-#                                         VALUES(?,?,?,?) '''
-#                                 cur.execute(sql, content3)
-#                                 conn.commit()
-
-#         return last_row_id
-
-def process_tasks(conn, target_titles):
+def process_tasks(conn, target_titles, database):
     last_row_ids = []
     cur = conn.cursor()
 
@@ -135,12 +77,11 @@ def process_tasks(conn, target_titles):
         if task_id_row:
             task_id = task_id_row[0]
 
-            for candidate in el.AllCandidates:
+            for candidate in el.AllCandidates: 
                 term = candidate.variations[candidate.match_variation].text
                 startPosition = candidate.variations[candidate.match_variation].start_char
                 endPosition = candidate.variations[candidate.match_variation].end_char
                 content1 = (task_id, term, startPosition, endPosition)
-
                 sql = ''' INSERT OR IGNORE INTO TermCandidates(taskId, term, startPosition, endPosition)
                         VALUES(?,?,?,?) '''
             
@@ -152,6 +93,7 @@ def process_tasks(conn, target_titles):
                     content2 = (term_row_id, snomed_link.ConceptId, snomed_link.DescriptionID, snomed_link.Term, candidate.similarities[index])
                     sql = ''' INSERT OR IGNORE INTO SNOMEDLinks(termId, conceptId, descriptionId, concept, similarity)
                             VALUES(?,?,?,?,?) '''
+                    
                     cur.execute(sql, content2)
                     last_row_id = cur.lastrowid 
                     conn.commit()
@@ -160,12 +102,13 @@ def process_tasks(conn, target_titles):
                     if icpc:
                         for code in icpc:
                             icpcTerm = ICPCDutch().search(code)
-                            situationId = ICPCDutch().search_situations(code)
+                            situationId = ICPCDutch().search_situations(code, database)
                             situationIds = situationId if situationId else None
                             for situationId in situationIds if situationIds else [None]:
                                 content3 = (last_row_id, code, icpcTerm, situationId)
                                 sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId)
                                         VALUES(?,?,?,?) '''
+                                
                                 cur.execute(sql, content3)
                                 conn.commit()
 
@@ -188,7 +131,7 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test2.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetes_coloncancer.sqlite3"
 
     conn = create_connection(database)
 
@@ -197,9 +140,8 @@ def main():
         insert_subjects(conn)
         insert_situations(conn)
         insert_tasks(conn)
-        process_tasks(conn, target_titles)
+        process_tasks(conn, target_titles, database)
         #delete_all_tables(conn)
-        
 
 if __name__ == '__main__':
     main()

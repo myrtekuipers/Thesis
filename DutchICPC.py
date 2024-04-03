@@ -25,14 +25,11 @@ class ICPCDutch:
             print("Error while querying the database1:", e)
             return None 
 
-    def search_situations(self, code):
-        #sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ?'''
+    def search_situations(self, code, database):
         sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ? OR situationICPC LIKE ?'''
 
-
         try:
-            database1 = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test2.sqlite3"
-            conn = sqlite3.connect(database1)
+            conn = sqlite3.connect(database)
             cur = conn.cursor()
             cur.execute(sql1, (code, '%' + code + '%'))
             result = cur.fetchall()
