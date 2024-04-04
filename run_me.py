@@ -8,13 +8,18 @@ import csv
 
 #get the text from task_data and then column text
 with open('data/task_data.csv', 'r') as file:
-    content = csv.reader(file)
-    next(content)
-    for row in content:
-        task_id = row[0]
-        situation_title = row[1]
-        example_doc = row[2]
-        break
+    # content = csv.reader(file)
+    # next(content)
+    # for row in content:
+    #     task_id = row[0]
+    #     situation_title = row[1]
+    #     example_doc = row[2]
+    #     break
+    reader = csv.DictReader(file)
+    for row in reader:
+        if row['situation_title'] == "Ik heb diabetes type 2":
+            text = row['content_text'] 
+            el = EntityLinking(text)
     
 
 # doc = "Bij wie wordt het risico op hart en vaatziekten geschat. Voor veel patiënten is een risicocategorie aan te wijzen zonder dat hun risico kwantitatief geschat hoeft te worden met een risicoscore. Denk aan patiënten met bestaande hart en vaatziekten, diabetes mellitus en daarmee gepaard gaande orgaanschade, ernstige chronische nierschade en extreem verhoogde risicofactoren. Deze categorieën staan toegelicht in tabel 1."
@@ -24,12 +29,12 @@ with open('data/task_data.csv', 'r') as file:
 #doc = f.read()
 #f.close()
 
-el = EntityLinking(example_doc)
+#el = EntityLinking(example_doc)
 
 print(el.AllCandidates)
 
-for candidate in el.AllCandidates:
-    print(candidate.variations[candidate.match_variation].text)
+# for candidate in el.AllCandidates:
+#     print(candidate.variations[candidate.match_variation].text)
 
 print("Finished!")
 

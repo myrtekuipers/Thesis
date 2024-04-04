@@ -2,8 +2,9 @@ import sqlite3
 import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
+import csv
 
-conn = sqlite3.connect('data/diabetes_coloncancer.sqlite3')
+conn = sqlite3.connect('data/test.sqlite3')
 cursor = conn.cursor()
 
 # get the subject info corresponding to the given task ID

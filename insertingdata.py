@@ -131,11 +131,11 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetes_coloncancer.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test.sqlite3"
 
     conn = create_connection(database)
 
-    target_titles = ["Ik heb diabetes type 2", "Ik heb mogelijk darmkanker"]
+    target_titles = ["Ik heb diabetes type 2", "Ik heb mogelijk darmkanker", "Heb ik een soa?"]
     with conn:
         insert_subjects(conn)
         insert_situations(conn)
