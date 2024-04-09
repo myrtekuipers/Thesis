@@ -131,11 +131,11 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test2.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test8.sqlite3"
 
     conn = create_connection(database)
 
-    target_titles = ["Ik heb een dissociatieve stoornis","Mijn naaste heeft een dissociatieve stoornis","Mijn kind heeft autisme","Ik heb pijn op de borst. Wat kan het zijn?","Ik heb een longontsteking","Ik heb last van hoesten","Mijn kind hoest"]
+    target_titles = ["Ik heb keelpijn", "Ik heb de ziekte van Pfeiffer"]
 
     with conn:
         insert_subjects(conn)

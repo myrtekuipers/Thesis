@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import csv
 
-conn = sqlite3.connect('data/test2.sqlite3')
+conn = sqlite3.connect('data/test8.sqlite3')
 cursor = conn.cursor()
 
 G = nx.DiGraph()
@@ -139,7 +139,26 @@ for node in G.nodes:
     else:
         node_colors.append('gray') 
 
+
+#add a legend with symptomen en klachten, diagnostische/preventieve verrichtingen, medicatie/therapeutische verrichtingen, uitslagen van onderzoek, administratieve verrichtingen, verwijzingen/andere verrichtingen, omschreven ziekten
+#plt.figure(figsize=(10, 10))
+plt.axis('off')
+
+legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='blue', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='red', markersize=10)]
+
+plt.legend(handles=legend_elements, loc='upper right')
+
+
+
+
 nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
+
 
 nx.draw(G, pos, with_labels=False, node_size=1000, node_color=node_colors, edge_color='gray', arrowsize=10)
 

@@ -25,21 +25,43 @@ class ICPCDutch:
             print("Error while querying the database1:", e)
             return None 
 
-    def search_situations(self, code, database):
-        sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ? OR situationICPC LIKE ?'''
+    # def search_situations(self, code, database):
+    #     sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ? OR situationICPC LIKE ?'''
 
-        try:
-            conn = sqlite3.connect(database)
-            cur = conn.cursor()
-            cur.execute(sql1, (code, '%' + code + '%'))
-            result = cur.fetchall()
-            if result:
-                return [row[0] for row in result]
-            else:
-                return None  # Code not found
-        except Error as e:
-            print("Error while querying the database:", e)
-            return None  # Return None in case of error
+    #     try:
+    #         conn = sqlite3.connect(database)
+    #         cur = conn.cursor()
+    #         cur.execute(sql1, (code, '%' + code + '%'))
+    #         result = cur.fetchall()
+    #         if result:
+    #             return [row[0] for row in result]
+    #         else:
+    #             return None  # Code not found
+    #     except Error as e:
+    #         print("Error while querying the database:", e)
+    #         return None  # Return None in case of error
+
+import sqlite3
+from sqlite3 import Error
+
+def search_situations(self, code, database):
+    sql1 = '''SELECT situationId FROM Situations 
+              WHERE situationICPC = ? 
+              OR situationICPC LIKE ?
+              OR SUBSTR(situationICPC, 1, INSTR(situationICPC, '.') - 1) = ?'''
+
+    try:
+        conn = sqlite3.connect(database)
+        cur = conn.cursor()
+        cur.execute(sql1, (code, '%' + code + '%', code))
+        result = cur.fetchall()
+        if result:
+            return [row[0] for row in result]
+        else:
+            return None  # Code not found
+    except Error as e:
+        print("Error while querying the database:", e)
+        return None  # Return None in case of error
 
 
 if __name__ == "__main__":
