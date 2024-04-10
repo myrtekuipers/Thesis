@@ -1,5 +1,7 @@
 import sqlite3
 from sqlite3 import Error
+import csv
+
 
 def create_connection(db_file):
     conn = None
@@ -11,7 +13,6 @@ def create_connection(db_file):
 
     return conn
 
-
 def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
@@ -19,9 +20,44 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
+def insert_subjects(conn):
+    with open('data/subject_data.csv', 'r') as file:
+        content = csv.reader(file)
+        next(content) 
+        sql = ''' INSERT OR IGNORE INTO subjects(subjectId, subjectTitle, subjectURL, subjectICPC)
+                  VALUES(?,?,?,?) '''
+    
+        cur = conn.cursor()
+        cur.executemany(sql, content)
+        conn.commit()
+        return cur.lastrowid
+    
+def insert_situations(conn):
+    with open('data/situation_data.csv', 'r') as file:
+        content = csv.reader(file)
+        next(content)
+        sql = ''' INSERT OR IGNORE INTO situations(subjectId, situationId, situationTitle, situationURL, situationICPC)
+                  VALUES(?,?,?,?,?) '''
+    
+        cur = conn.cursor()
+        cur.executemany(sql, content)
+        conn.commit()
+        return cur.lastrowid
+    
+def insert_tasks(conn):
+    with open('data/task_data.csv', 'r') as file:
+        content = csv.reader(file)
+        next(content)
+        sql = ''' INSERT OR IGNORE INTO tasks(situationId, situationTitle, text)
+                  VALUES(?,?,?) '''
+        
+        cur = conn.cursor()
+        cur.executemany(sql, content)
+        conn.commit()
+        return cur.lastrowid
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test8.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetestype2.sqlite3"
 
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
@@ -77,8 +113,10 @@ def main():
             icpc TEXT,
             icpcTerm TEXT,
             situationId INTEGER,
+            subjectId INTEGER,
             FOREIGN KEY (snomedlinkId) REFERENCES SNOMEDLinks(snomedlinkId)
             FOREIGN KEY (situationId) REFERENCES Situations(situationId)
+            FOREIGN KEY (subjectID) REFERENCES Subjects(subjectId)
             );
             """
 
@@ -91,9 +129,13 @@ def main():
         create_table(conn, sql_create_term_candidates_table)
         create_table(conn, sql_create_snomed_links_table)
         create_table(conn, sql_create_db_links_table)
+        insert_subjects(conn)
+        insert_situations(conn)
+        insert_tasks(conn)
+
+
     else:
         print("Error! cannot create the database connection.")
-
 
 if __name__ == '__main__':
     main()

@@ -105,9 +105,13 @@ def process_tasks(conn, target_titles, database):
                             situationId = ICPCDutch().search_situations(code, database)
                             situationIds = situationId if situationId else None
                             for situationId in situationIds if situationIds else [None]:
-                                content3 = (last_row_id, code, icpcTerm, situationId)
-                                sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId)
-                                        VALUES(?,?,?,?) '''
+                                if situationId:
+                                    subjectId = cur.execute("SELECT subjectId FROM situations WHERE situationId = ?", (situationId,)).fetchone()[0]
+                                else:
+                                    subjectId = None
+                                content3 = (last_row_id, code, icpcTerm, situationId, subjectId)
+                                sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId, subjectId)
+                                        VALUES(?,?,?,?,?) '''
                                 
                                 cur.execute(sql, content3)
                                 conn.commit()
@@ -131,16 +135,32 @@ def delete_all_tables(conn):
     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/test8.sqlite3"
+    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetestype2.sqlite3"
 
     conn = create_connection(database)
 
-    target_titles = ["Ik heb keelpijn", "Ik heb de ziekte van Pfeiffer"]
+    target_titles = ["Ik heb diabetes type 2", 
+                     "Ik heb een verhoogde kans op diabetes type 2", 
+                     "Ik wil mijn diabetes type 2 goed (laten) controleren", 
+                     "Ik wil gezond leven met diabetes type 2", 
+                     "Ik ga mijn bloedsuiker zelf meten bij diabetes type 2", 
+                     "Ik wil weten wat ik zelf aan mijn diabetesbehandeling kan doen", 
+                     "Ik wil gezond eten bij diabetes type 2", 
+                     "Ik gebruik medicijnen bij diabetes type 2", 
+                     "Ik ga insuline spuiten voor diabetes type 2", 
+                     "Ik heb diabetes type 2 en mijn bloedsuiker blijft te hoog", 
+                     "Ik heb diabetes type 2 en mijn bloedsuiker is te laag", 
+                     "Ik wil mijn voeten goed verzorgen bij diabetes", 
+                     "Ik ben verwezen naar de internist vanwege hoge bloedsuiker bij diabetes type 2", 
+                     "Ik ben verwezen naar de internist omdat ik naast diabetes type 2 andere gezondheidsproblemen heb", 
+                     "Ik heb diabetes en laat mijn ogen onderzoeken", 
+                     "Ik ben een oudere en wil misschien stoppen met medicijnen tegen diabetes type 2", 
+                     "Ik gebruik medicijnen bij diabetes type 2 en een ziekte van hart, bloedvaten of nieren"]
 
     with conn:
-        insert_subjects(conn)
-        insert_situations(conn)
-        insert_tasks(conn)
+        # insert_subjects(conn)
+        # insert_situations(conn)
+        # insert_tasks(conn)
         process_tasks(conn, target_titles, database) 
         #delete_all_tables(conn)
 

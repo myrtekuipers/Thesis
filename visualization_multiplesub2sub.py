@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import csv
 
-conn = sqlite3.connect('data/test8.sqlite3')
+conn = sqlite3.connect('data/acne.sqlite3')
 cursor = conn.cursor()
 
 G = nx.DiGraph()
@@ -40,17 +40,27 @@ for task_id in task_ids:
 
     source_nodes.append(subject_id)
 
+    # cursor.execute('''
+    #     SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT s.subjectId) AS subject_ids
+    #     FROM dblinks d
+    #     JOIN situations s ON d.situationId = s.situationId
+    #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
+    #     JOIN termcandidates tc ON sl.termId = tc.termId
+    #     WHERE tc.taskId = ?
+    #     GROUP BY sl.snomedlinkId
+    # ''', (task_id,))
+    
     cursor.execute('''
-        SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT s.subjectId) AS subject_ids
-        FROM dblinks d
-        JOIN situations s ON d.situationId = s.situationId
-        JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE tc.taskId = ?
-        GROUP BY sl.snomedlinkId
+    SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
+    FROM dblinks d
+    JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
+    JOIN termcandidates tc ON sl.termId = tc.termId
+    WHERE tc.taskId = ?
+    GROUP BY sl.snomedlinkId
     ''', (task_id,))
 
     results = cursor.fetchall()
+
 
     subject_occurrences = {}
 
@@ -63,23 +73,35 @@ for task_id in task_ids:
             else:
                 subject_occurrences[subject_id1] += 1
 
+    #
+    
+    # cursor.execute('''
+    #     SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
+    #     FROM situations s
+    #     JOIN subjects sub ON s.subjectId = sub.subjectId
+    #     WHERE s.situationId IN (
+    #         SELECT d.situationId
+    #         FROM dblinks d
+    #         WHERE d.snomedlinkId IN (
+    #             SELECT sl.snomedlinkId
+    #             FROM snomedlinks sl
+    #             WHERE sl.termId IN (
+    #                 SELECT tc.termId
+    #                 FROM termcandidates tc
+    #                 WHERE tc.taskId = ?
+    #             )
+    #         )
+    #     )
+    # ''', (task_id,))
+
     cursor.execute('''
-        SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
-        FROM situations s
-        JOIN subjects sub ON s.subjectId = sub.subjectId
-        WHERE s.situationId IN (
-            SELECT d.situationId
-            FROM dblinks d
-            WHERE d.snomedlinkId IN (
-                SELECT sl.snomedlinkId
-                FROM snomedlinks sl
-                WHERE sl.termId IN (
-                    SELECT tc.termId
-                    FROM termcandidates tc
-                    WHERE tc.taskId = ?
-                )
-            )
-        )
+    SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
+    FROM dblinks d
+    JOIN subjects sub ON d.subjectId = sub.subjectId
+    JOIN situations s ON d.situationId = s.situationId
+    JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
+    JOIN termcandidates tc ON sl.termId = tc.termId
+    WHERE tc.taskId = ?
     ''', (task_id,))
 
     related_subject_data = cursor.fetchall()
