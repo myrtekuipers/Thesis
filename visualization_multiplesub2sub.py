@@ -1,27 +1,34 @@
 import sqlite3
+from sqlite3 import Error
 import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
-import csv
 
-conn = sqlite3.connect('data/acne.sqlite3')
-cursor = conn.cursor()
+
+database = 'data/combined.sqlite3'
+
+try: 
+    conn = sqlite3.connect(database)
+except Error as e:
+    print(e)
+
+cur = conn.cursor()
 
 G = nx.DiGraph()
 
-cursor.execute('''
+cur.execute('''
     SELECT DISTINCT taskId
     FROM termcandidates
 ''')
 
-task_ids = cursor.fetchall()
+task_ids = cur.fetchall()
 
 source_nodes = []
 
 for task_id in task_ids: 
     task_id = task_id[0]
 
-    cursor.execute('''
+    cur.execute('''
         SELECT sub.subjectId, sub.subjectTitle, sub.subjectICPC
         FROM subjects sub
         JOIN situations s ON sub.subjectId = s.subjectId
@@ -32,7 +39,7 @@ for task_id in task_ids:
         )
     ''', (task_id,))
 
-    subject_info_task = cursor.fetchone()  # only one subject id corresponding to that task id
+    subject_info_task = cur.fetchone()  # only one subject id corresponding to that task id
 
     subject_id, subjectTitle, subjectICPC = subject_info_task
 
@@ -50,7 +57,7 @@ for task_id in task_ids:
     #     GROUP BY sl.snomedlinkId
     # ''', (task_id,))
     
-    cursor.execute('''
+    cur.execute('''
     SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
     FROM dblinks d
     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
@@ -59,19 +66,19 @@ for task_id in task_ids:
     GROUP BY sl.snomedlinkId
     ''', (task_id,))
 
-    results = cursor.fetchall()
-
+    results = cur.fetchall()
 
     subject_occurrences = {}
 
     for row in results:
-        subject_ids = row[1].split(',') 
-        
-        for subject_id1 in subject_ids:
-            if subject_id1 not in subject_occurrences:
-                subject_occurrences[subject_id1] = 1
-            else:
-                subject_occurrences[subject_id1] += 1
+            value = row[1]
+            if value is not None:
+                subject_ids = value.split(',') 
+                for subject_id1 in subject_ids:
+                    if subject_id1 not in subject_occurrences:
+                        subject_occurrences[subject_id1] = 1
+                    else:
+                        subject_occurrences[subject_id1] += 1
 
     #
     
@@ -94,7 +101,7 @@ for task_id in task_ids:
     #     )
     # ''', (task_id,))
 
-    cursor.execute('''
+    cur.execute('''
     SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
     FROM dblinks d
     JOIN subjects sub ON d.subjectId = sub.subjectId
@@ -104,7 +111,7 @@ for task_id in task_ids:
     WHERE tc.taskId = ?
     ''', (task_id,))
 
-    related_subject_data = cursor.fetchall()
+    related_subject_data = cur.fetchall()
 
     for related_subject_id, related_subjectTitle, related_subjectICPC in related_subject_data:
         if subject_id != related_subject_id:  
@@ -161,9 +168,6 @@ for node in G.nodes:
     else:
         node_colors.append('gray') 
 
-
-#add a legend with symptomen en klachten, diagnostische/preventieve verrichtingen, medicatie/therapeutische verrichtingen, uitslagen van onderzoek, administratieve verrichtingen, verwijzingen/andere verrichtingen, omschreven ziekten
-#plt.figure(figsize=(10, 10))
 plt.axis('off')
 
 legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='blue', markersize=10),

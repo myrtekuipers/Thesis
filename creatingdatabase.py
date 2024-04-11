@@ -2,63 +2,55 @@ import sqlite3
 from sqlite3 import Error
 import csv
 
+database = 'data/combined.sqlite3'
 
-def create_connection(db_file):
-    conn = None
+try: 
+    conn = sqlite3.connect(database)
+except Error as e:
+    print(e)
+
+cur = conn.cursor()
+
+def create_table(create_table_sql):
     try:
-        conn = sqlite3.connect(db_file)
-        return conn
+        cur.execute(create_table_sql)
     except Error as e:
         print(e)
 
-    return conn
-
-def create_table(conn, create_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-def insert_subjects(conn):
+def insert_subjects():
     with open('data/subject_data.csv', 'r') as file:
         content = csv.reader(file)
         next(content) 
         sql = ''' INSERT OR IGNORE INTO subjects(subjectId, subjectTitle, subjectURL, subjectICPC)
                   VALUES(?,?,?,?) '''
     
-        cur = conn.cursor()
         cur.executemany(sql, content)
         conn.commit()
         return cur.lastrowid
     
-def insert_situations(conn):
+def insert_situations():
     with open('data/situation_data.csv', 'r') as file:
         content = csv.reader(file)
         next(content)
         sql = ''' INSERT OR IGNORE INTO situations(subjectId, situationId, situationTitle, situationURL, situationICPC)
                   VALUES(?,?,?,?,?) '''
     
-        cur = conn.cursor()
         cur.executemany(sql, content)
         conn.commit()
         return cur.lastrowid
     
-def insert_tasks(conn):
+def insert_tasks():
     with open('data/task_data.csv', 'r') as file:
         content = csv.reader(file)
         next(content)
         sql = ''' INSERT OR IGNORE INTO tasks(situationId, situationTitle, text)
                   VALUES(?,?,?) '''
         
-        cur = conn.cursor()
         cur.executemany(sql, content)
         conn.commit()
         return cur.lastrowid
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetestype2.sqlite3"
-
     sql_create_subjects_table = """ CREATE TABLE IF NOT EXISTS Subjects (
             subjectId INTEGER PRIMARY KEY,
             subjectTitle TEXT,
@@ -120,22 +112,15 @@ def main():
             );
             """
 
-    conn = create_connection(database)
-
-    if conn is not None:
-        create_table(conn, sql_create_subjects_table)
-        create_table(conn, sql_create_situations_table)
-        create_table(conn, sql_create_tasks_table)
-        create_table(conn, sql_create_term_candidates_table)
-        create_table(conn, sql_create_snomed_links_table)
-        create_table(conn, sql_create_db_links_table)
-        insert_subjects(conn)
-        insert_situations(conn)
-        insert_tasks(conn)
-
-
-    else:
-        print("Error! cannot create the database connection.")
+    create_table(sql_create_subjects_table)
+    create_table(sql_create_situations_table)
+    create_table(sql_create_tasks_table)
+    create_table(sql_create_term_candidates_table)
+    create_table(sql_create_snomed_links_table)
+    create_table(sql_create_db_links_table)
+    insert_subjects()
+    insert_situations()
+    insert_tasks()
 
 if __name__ == '__main__':
     main()

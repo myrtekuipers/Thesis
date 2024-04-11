@@ -5,20 +5,19 @@ from DutchSnomed import *
 from DutchICPC import *
 from Mapping import *
 
-def create_connection(db_file):
-    conn = None
-    try:
-        conn = sqlite3.connect(db_file)
-    except Error as e:
-        print(e)
+database = 'data/combined.sqlite3'
 
-    return conn
+try: 
+    conn = sqlite3.connect(database)
+except Error as e:
+    print(e)
 
-def process_tasks(conn, target_titles, database):
+cur = conn.cursor()
+
+def process_tasks(source_subjects):
     last_row_ids = []
-    cur = conn.cursor()
 
-    for source_title in target_titles:
+    for source_title in source_subjects:
         cur.execute("SELECT subjectId FROM subjects WHERE subjectTitle = ?", (source_title,))
         source_subject_id = cur.fetchone()[0]
 
@@ -68,6 +67,7 @@ def process_tasks(conn, target_titles, database):
                                     subjectId = cur.execute("SELECT subjectId FROM situations WHERE situationId = ?", (situationId,)).fetchone()[0]
                                 else:
                                     subjectId = None
+                                
                                 content3 = (last_row_id, code, icpcTerm, situationId, subjectId)
                                 sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId, subjectId)
                                         VALUES(?,?,?,?,?) '''
@@ -93,15 +93,9 @@ def process_tasks(conn, target_titles, database):
 #     conn.commit()
 
 def main():
-    database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/diabetestype2.sqlite3"
+    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst"]
 
-    conn = create_connection(database)
-
-    source_subject = ["Diabetes type 2"]
-
-    with conn:
-        process_tasks(conn, source_subject, database) 
-        # delete_all_tables(conn)
+    process_tasks(source_subjects) 
 
 if __name__ == '__main__':
     main()
