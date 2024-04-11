@@ -38,6 +38,7 @@ def get_related_subjects():
         JOIN situations s ON d.situationId = s.situationId
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
         JOIN termcandidates tc ON sl.termId = tc.termId
+        WHERE sl.similarity = 1
     ''')
     related_subject_data = cur.fetchall()
 
@@ -98,28 +99,30 @@ def add_node_colors(subject_id):
         range(70, 100): 'red'   # Omschreven ziekten
     }
 
-    node_colors = ['yellow'] 
+    node_colors = []
     for node in G.nodes:
-        if node != subject_id:
-            colors = []
-            if 'subjectICPC' in G.nodes[node]:
-                icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
-                for icpc_value in icpc_values:
-                    if icpc_value == '': 
-                        continue
-                    for key, value in color_mapping.items():
-                        if isinstance(key, range):
-                            if int(icpc_value[1:3]) in key:
-                                colors.append(value)
-            if colors:
-                most_common_colors = Counter(colors).most_common() 
-                most_common_color = most_common_colors[0] 
-                if len(most_common_colors) > 1:
-                    node_colors.append('pink')  
-                else:
-                    node_colors.append(most_common_color)  
-            else:
-                node_colors.append('gray') 
+        color = 'gray'
+        if node == subject_id:
+            color = 'yellow'
+        elif 'subjectICPC' in G.nodes[node]:
+            icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
+            for icpc_value in icpc_values:
+                if icpc_value == '': 
+                    continue
+                for key, value in color_mapping.items():
+                    if isinstance(key, range):
+                        if int(icpc_value[1:3]) in key:
+                            color = value
+        node_colors.append(color)
+        # if colors:
+        #     most_common_colors = Counter(colors).most_common() 
+        #     most_common_color = most_common_colors[0] 
+        #     if len(most_common_colors) > 1:
+        #         node_colors.append('pink')  
+        #     else:
+        #         node_colors.append(most_common_color)  
+        # else:
+        #     node_colors.append('gray') 
 
     return node_colors
 
@@ -134,12 +137,12 @@ def add_legend():
 
     plt.legend(handles=legend_elements, loc='upper right')
 
-def draw_graph(node_labels, node_colors):
+def draw_graph(node_labels):
     pos = nx.spring_layout(G)
     plt.axis('off')
     #add_legend()
     nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
-    nx.draw(G, pos, with_labels=False, node_size=1000, node_color=node_colors, edge_color='gray', arrowsize=10)
+    nx.draw(G, pos, with_labels=False, node_size=1000, edge_color='gray', arrowsize=10)
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Subject Relationships')
@@ -154,8 +157,8 @@ def main():
     related_subject_data = get_related_subjects()
     add_related_nodes_edges(related_subject_data, subject_occurrences, source_id)
     node_labels = add_node_labels()
-    node_colors = add_node_colors(source_id)
-    draw_graph(node_labels, node_colors)
+    #node_colors = add_node_colors(source_id)
+    draw_graph(node_labels)
 
 if __name__ == '__main__':
     main()

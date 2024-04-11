@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import csv
 
-database = 'data/combinedcases.sqlite3'
+database = 'data/buikpijn.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)

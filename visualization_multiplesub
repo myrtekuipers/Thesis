@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-database = 'data/combined.sqlite3'
+database = 'data/combinedcases.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -115,12 +115,11 @@ def add_node_colors(source_ids):
 
     node_colors = []
     for node in G.nodes:
-        colors = []
+        colors = ['grey']
         if node in source_ids:
             colors.append('yellow')
         elif 'subjectICPC' in G.nodes[node]:
             icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
-            colors = [] 
             for icpc_value in icpc_values:
                 if icpc_value == '': 
                     continue
@@ -130,7 +129,11 @@ def add_node_colors(source_ids):
                             colors.append(value)
         if colors:
             most_common_colors = Counter(colors).most_common() 
+            #if len(most_common_colors) > 1:
+            #   if 
+            
             most_common_color = most_common_colors[0] 
+            print(most_common_color)
             if len(most_common_colors) > 1:
                 node_colors.append('pink')  
             else:
@@ -152,16 +155,17 @@ def add_legend():
     plt.legend(handles=legend_elements, loc='upper right')
 
 
-def draw_graph(node_labels, node_colors):
+def draw_graph(node_labels):
     pos = nx.spring_layout(G)
     plt.axis('off')
     #add_legend()
     nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
-    nx.draw(G, pos, with_labels=False, node_size=1000, node_color=node_colors, edge_color='gray', arrowsize=10)
+    nx.draw(G, pos, with_labels=False, node_size=1000, edge_color='gray', arrowsize=10)
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Subject Relationships')
     plt.show()
+    plt.close()
 
 def main():
     source_subjects = ["Hoesten", "Pijn op de borst"]
@@ -173,8 +177,8 @@ def main():
         get_task_ids(source_id)
 
     node_labels = add_node_labels()
-    node_colors = add_node_colors(source_ids)  
-    draw_graph(node_labels, node_colors)
+   # node_colors = add_node_colors(source_ids)  
+    draw_graph(node_labels)
 
 if __name__ == '__main__':
     main()

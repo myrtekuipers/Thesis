@@ -5,7 +5,7 @@ from DutchSnomed import *
 from DutchICPC import *
 from Mapping import *
 
-database = 'data/combinedcases.sqlite3'
+database = 'data/buikpijn.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -96,7 +96,7 @@ def process_tasks(source_subjects):
 #     conn.commit()
 
 def main():
-    source_subjects = ["Uitstrijkje baarmoederhals", "Acne", "Hoesten", "Keelpijn", "Buikpijn", "Pijn op de borst"]
+    source_subjects = ["Buikpijn"]
 
     process_tasks(source_subjects) 
     #delete_all_tables(conn)
