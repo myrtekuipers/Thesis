@@ -32,19 +32,23 @@ def get_subject_info(source_subject):
 
 def get_related_subjects():
     cur.execute('''
-        SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
+        SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
         FROM dblinks d
         JOIN subjects sub ON d.subjectId = sub.subjectId
-        JOIN situations s ON d.situationId = s.situationId
-        JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE sl.similarity = 1
     ''')
+    # cur.execute('''
+    #     SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
+    #     FROM dblinks d
+    #     JOIN subjects sub ON d.subjectId = sub.subjectId
+    #     JOIN situations s ON d.situationId = s.situationId
+    #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
+    #     JOIN termcandidates tc ON sl.termId = tc.termId
+    # ''')
     related_subject_data = cur.fetchall()
 
     return related_subject_data
 
-def get_related_subjects_freq():
+def get_related_subjects_freq(related_subject_data):
     cur.execute('''
         SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
         FROM dblinks d
@@ -61,10 +65,11 @@ def get_related_subjects_freq():
         if value is not None:
             subject_ids = value.split(',') 
             for subject_id1 in subject_ids:
-                if subject_id1 not in subject_occurrences:
-                    subject_occurrences[subject_id1] = 1
-                else:
-                    subject_occurrences[subject_id1] += 1
+                if subject_id1 in [str(row[0]) for row in related_subject_data]: # Checking if the subject_id is in the related_subject_data
+                    if subject_id1 not in subject_occurrences:
+                        subject_occurrences[subject_id1] = 1
+                    else:
+                        subject_occurrences[subject_id1] += 1
 
     return subject_occurrences
 
@@ -153,8 +158,8 @@ def main():
     source_subject = "Buikpijn"
 
     source_id = get_subject_info(source_subject)
-    subject_occurrences = get_related_subjects_freq()
     related_subject_data = get_related_subjects()
+    subject_occurrences = get_related_subjects_freq(related_subject_data)
     add_related_nodes_edges(related_subject_data, subject_occurrences, source_id)
     node_labels = add_node_labels()
     #node_colors = add_node_colors(source_id)

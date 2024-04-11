@@ -47,15 +47,25 @@ def get_related_subjects_freq(task_ids, source_id):
     for task_id in task_ids:
         task_id = task_id[0]
         cur.execute('''
-            SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
+            SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
             FROM dblinks d
             JOIN subjects sub ON d.subjectId = sub.subjectId
-            JOIN situations s ON d.situationId = s.situationId
             JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
             JOIN termcandidates tc ON sl.termId = tc.termId
             WHERE tc.taskId = ?
         ''', (task_id,))
         related_subject_data = cur.fetchall()
+
+        # cur.execute('''
+        #     SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
+        #     FROM dblinks d
+        #     JOIN subjects sub ON d.subjectId = sub.subjectId
+        #     JOIN situations s ON d.situationId = s.situationId
+        #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
+        #     JOIN termcandidates tc ON sl.termId = tc.termId
+        #     WHERE tc.taskId = ?
+        # ''', (task_id,))
+        # related_subject_data = cur.fetchall()
 
         cur.execute('''
             SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
