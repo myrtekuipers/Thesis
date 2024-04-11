@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import csv
 
-database = 'data/combined.sqlite3'
+database = 'data/combinedcases.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -103,6 +103,7 @@ def main():
             linkId INTEGER PRIMARY KEY,
             snomedlinkId INTEGER,
             icpc TEXT,
+            level INTEGER,
             icpcTerm TEXT,
             situationId INTEGER,
             subjectId INTEGER,

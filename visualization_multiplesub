@@ -130,7 +130,7 @@ def add_node_colors(source_ids):
                             colors.append(value)
         if colors:
             most_common_colors = Counter(colors).most_common() 
-            most_common_color, count = most_common_colors[0] 
+            most_common_color = most_common_colors[0] 
             if len(most_common_colors) > 1:
                 node_colors.append('pink')  
             else:
@@ -164,7 +164,7 @@ def draw_graph(node_labels, node_colors):
     plt.show()
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Hoesten"]
+    source_subjects = ["Hoesten", "Pijn op de borst"]
 
     source_ids = []
     for source_subject in source_subjects:

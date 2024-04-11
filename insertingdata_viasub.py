@@ -5,7 +5,7 @@ from DutchSnomed import *
 from DutchICPC import *
 from Mapping import *
 
-database = 'data/combined.sqlite3'
+database = 'data/combinedcases.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -60,20 +60,24 @@ def process_tasks(source_subjects):
                     if icpc:
                         for code in icpc:
                             icpcTerm = ICPCDutch().search(code)
-                            situationId = ICPCDutch().search_situations(code, database)
-                            situationIds = situationId if situationId else None
-                            for situationId in situationIds if situationIds else [None]:
-                                if situationId:
-                                    subjectId = cur.execute("SELECT subjectId FROM situations WHERE situationId = ?", (situationId,)).fetchone()[0]
-                                else:
-                                    subjectId = None
-                                
-                                content3 = (last_row_id, code, icpcTerm, situationId, subjectId)
-                                sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, icpcTerm, situationId, subjectId)
-                                        VALUES(?,?,?,?,?) '''
-                                
-                                cur.execute(sql, content3)
-                                conn.commit()
+                            results = ICPCDutch().search_situations(code, database)
+                            if results is not None:
+                                for situationId, level in results:
+                                    if situationId:
+                                        subjectId = cur.execute("SELECT subjectId FROM situations WHERE situationId = ?", (situationId,)).fetchone()[0]
+                                        level = level
+                                    else:
+                                        subjectId = None
+                                        level = None
+                                    
+                                    #icpc term does now correspond to the code that was searched for, and if the more general code resulted in a situation, the icpc code (and term) in that row is still the specific code that was searched for, maybe change that?
+                                    #or only change term? because the more general code is easily accessible from the specific code and then one level up. But the term could be different
+                                    content3 = (last_row_id, code, level, icpcTerm, situationId, subjectId)
+                                    sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, level, icpcTerm, situationId, subjectId)
+                                            VALUES(?,?,?,?,?,?) '''
+                                    
+                                    cur.execute(sql, content3)
+                                    conn.commit()              
 
             last_row_ids.append(last_row_id)
 
@@ -85,17 +89,18 @@ def process_tasks(source_subjects):
 #     cur.execute(sql)
 #     conn.commit()
     
-# def delete_all_tables(conn):
-#     cur = conn.cursor()
+# def delete_all_tables():
 #     cur.execute("DELETE FROM termcandidates")
 #     cur.execute("DELETE FROM snomedlinks")
 #     cur.execute("DELETE FROM dblinks")
 #     conn.commit()
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst"]
+    source_subjects = ["Uitstrijkje baarmoederhals", "Acne", "Hoesten", "Keelpijn", "Buikpijn", "Pijn op de borst"]
 
     process_tasks(source_subjects) 
+    #delete_all_tables(conn)
+
 
 if __name__ == '__main__':
     main()

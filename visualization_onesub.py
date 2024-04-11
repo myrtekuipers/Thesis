@@ -113,7 +113,7 @@ def add_node_colors(subject_id):
                                 colors.append(value)
             if colors:
                 most_common_colors = Counter(colors).most_common() 
-                most_common_color, count = most_common_colors[0] 
+                most_common_color = most_common_colors[0] 
                 if len(most_common_colors) > 1:
                     node_colors.append('pink')  
                 else:
@@ -123,9 +123,21 @@ def add_node_colors(subject_id):
 
     return node_colors
 
+def add_legend():
+    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='blue', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='red', markersize=10)]
+
+    plt.legend(handles=legend_elements, loc='upper right')
+
 def draw_graph(node_labels, node_colors):
     pos = nx.spring_layout(G)
     plt.axis('off')
+    #add_legend()
     nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
     nx.draw(G, pos, with_labels=False, node_size=1000, node_color=node_colors, edge_color='gray', arrowsize=10)
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}

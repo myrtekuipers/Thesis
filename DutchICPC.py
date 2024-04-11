@@ -27,49 +27,31 @@ class ICPCDutch:
 
     def search_situations(self, code, database):
         sql1 = '''SELECT situationId FROM Situations WHERE situationICPC = ? OR situationICPC LIKE ?'''
+        results = []
 
         try:
             conn = sqlite3.connect(database)
             cur = conn.cursor()
+            
             cur.execute(sql1, (code, '%' + code + '%'))
             result = cur.fetchall()
-            if result:
-                return [row[0] for row in result]
+
+            results.extend([(row[0], 0) for row in result])
+
+            if '.' in code:
+                general_code = code.split('.')[0]
+                cur.execute(sql1, (general_code, '%' + general_code + '%'))
+                result = cur.fetchall()
+
+                results.extend([(row[0], -1) for row in result])
+
+            if results:
+                return results
             else:
                 return None  # Code not found
         except Error as e:
             print("Error while querying the database:", e)
             return None  # Return None in case of error
-
-
-    # def search_situations(self, code, database):
-    #     sql1 = '''SELECT situationId, 
-    #                     CASE 
-    #                         WHEN situationICPC = ? OR situationICPC LIKE ? THEN 0 
-    #                         WHEN SUBSTR(situationICPC, 1, INSTR(situationICPC, '.') - 1) = ? OR 
-    #                             SUBSTR(situationICPC, 1, INSTR(situationICPC, '.') - 1) LIKE ? THEN -1 
-    #                         ELSE NULL 
-    #                     END AS level 
-    #             FROM Situations 
-    #             WHERE situationICPC = ? 
-    #             OR situationICPC LIKE ?
-    #             OR SUBSTR(situationICPC, 1, INSTR(situationICPC, '.') - 1) = ? 
-    #             OR SUBSTR(situationICPC, 1, INSTR(situationICPC, '.') - 1) LIKE ?'''
-
-    #     try:
-    #         conn = sqlite3.connect(database)
-    #         cur = conn.cursor()
-    #         cur.execute(sql1, (code, '%' + code + '%', code, '%' + code + '%', code, '%' + code + '%', code, '%' + code + '%'))
-    #         result = cur.fetchall()
-    #         if result:
-    #             return [(row[0], row[1]) for row in result]
-    #         else:
-    #             return [(None, None)]  # Return a single tuple with None values if no results found
-    #     except Error as e:
-    #         print("Error while querying the database:", e)
-    #         return [(None, None)]  # Return a single tuple with None values in case of error
-
-
 
 
 if __name__ == "__main__":
