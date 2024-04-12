@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-database = 'data/keelpijn.sqlite3'
+database = 'databases/hoesten.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -20,7 +20,6 @@ def get_subject_info(source_subject):
         SELECT subjectId, subjectTitle, subjectICPC
         FROM subjects 
         WHERE subjectTitle = ?
-        
     ''', (source_subject,))
 
     subject_info_task = cur.fetchone()  
@@ -32,10 +31,14 @@ def get_subject_info(source_subject):
 
 def get_related_situations():
     cur.execute('''
-                SELECT d.situationId, s.situationTitle, s.situationICPC
-                FROM dblinks d
-                JOIN situations s ON d.situationId = s.situationId
-                ''')
+        SELECT d.situationId, s.situationTitle, s.situationICPC
+        FROM dblinks d
+        JOIN situations s ON d.situationId = s.situationId
+
+    ''')
+
+        #     JOIN snomedlinks sl ON d.snomedlinkId = sl.linkid
+        # WHERE sl.similarity = 1
     
     related_situation_data = cur.fetchall()
 
@@ -66,49 +69,6 @@ def get_related_situations_freq(related_situation_data):
 
     return situation_occurrences
 
-# def get_related_subjects():
-#     cur.execute('''
-#         SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
-#         FROM dblinks d
-#         JOIN subjects sub ON d.subjectId = sub.subjectId
-#     ''')
-#     # cur.execute('''
-#     #     SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
-#     #     FROM dblinks d
-#     #     JOIN subjects sub ON d.subjectId = sub.subjectId
-#     #     JOIN situations s ON d.situationId = s.situationId
-#     #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-#     #     JOIN termcandidates tc ON sl.termId = tc.termId
-#     # ''')
-#     related_subject_data = cur.fetchall()
-
-#     return related_subject_data
-
-def get_related_subjects_freq():
-    cur.execute('''
-        SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
-        FROM dblinks d
-        JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        GROUP BY sl.snomedlinkId
-    ''')
-
-    results = cur.fetchall()
-
-    subject_occurrences = {}
-
-    for row in results:
-        value = row[1]
-        if value is not None:
-            subject_ids = value.split(',') 
-            for subject_id1 in subject_ids:
-                #if subject_id1 in [str(row[0]) for row in related_subject_data]: # Checking if the subject_id is in the related_subject_data
-                if subject_id1 not in subject_occurrences:
-                    subject_occurrences[subject_id1] = 1
-                else:
-                    subject_occurrences[subject_id1] += 1
-
-    return subject_occurrences
-
 def add_related_situations_nodes_edges(related_situation_data, situation_occurrences, source_id):
     for related_situation_id, related_situationTitle, related_situationICPC in related_situation_data:
         G.add_node(related_situation_id, situationTitle=related_situationTitle, situationICPC=related_situationICPC)
@@ -117,14 +77,7 @@ def add_related_situations_nodes_edges(related_situation_data, situation_occurre
             G.add_edge(source_id, related_situation_id, weight = occurrences)
 
 
-def add_related_subjects_nodes_edges(related_situation_data, subject_occurrences):
-    # for related_subject_id, related_subjectTitle, related_subjectICPC in related_subject_data:
-    #     if subject_id != related_subject_id:  
-    #         G.add_node(related_subject_id, subjectTitle=related_subjectTitle, subjectICPC=related_subjectICPC)
-    #         if str(related_subject_id) in subject_occurrences:
-    #             occurrences = subject_occurrences.get(str(related_subject_id))
-    #             G.add_edge(situation_id, related_subject_id, weight=occurrences)
-    
+def add_related_subjects_nodes_edges(related_situation_data):
     for situation_id, _, _ in related_situation_data:
         cur.execute('''
             SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
@@ -135,19 +88,9 @@ def add_related_subjects_nodes_edges(related_situation_data, subject_occurrences
         ''', (situation_id,))
         related_subjects = cur.fetchall()
 
-
-#     cur.execute('''
-# #         SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
-# #         FROM dblinks d
-# #         JOIN subjects sub ON d.subjectId = sub.subjectId
-# #     ''')
-    
-    #for every situation_id, add the corresponding subject id as a node
         for related_subject_id, related_subject_title, related_subject_icpc in related_subjects:
             G.add_node(related_subject_id, subjectTitle = related_subject_title, subjectICPC = related_subject_icpc)
-            if str(related_subject_id) in subject_occurrences:
-                occurrences = subject_occurrences.get(str(related_subject_id))
-                G.add_edge(situation_id, related_subject_id, weight = occurrences)
+            G.add_edge(situation_id, related_subject_id, weight = 1)
 
 def add_node_labels():
     node_labels = {}
@@ -221,14 +164,13 @@ def draw_graph(node_labels, node_colors):
     plt.close()
 
 def main():
-    source_subject = "Buikpijn"
+    source_subject = "Hoesten"
 
     source_id = get_subject_info(source_subject)
     related_situation_data = get_related_situations()
     situation_occurrences = get_related_situations_freq(related_situation_data)
     add_related_situations_nodes_edges(related_situation_data, situation_occurrences, source_id)
-    subject_occurrences = get_related_subjects_freq()
-    add_related_subjects_nodes_edges(related_situation_data, subject_occurrences)
+    add_related_subjects_nodes_edges(related_situation_data)
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_id)
     draw_graph(node_labels, node_colors)
