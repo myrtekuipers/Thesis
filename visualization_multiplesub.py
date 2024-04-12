@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-database = 'data/combinedcases.sqlite3'
+database = 'data/combinedcomplete.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -178,7 +178,7 @@ def draw_graph(node_labels):
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Pijn op de borst"]
+    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst", "Uitstrijkje baarmoederhals"]
 
     source_ids = []
     for source_subject in source_subjects:
