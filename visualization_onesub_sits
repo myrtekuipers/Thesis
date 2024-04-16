@@ -60,12 +60,12 @@ def get_related_situations_freq(related_situation_data):
         value = row[1]
         if value is not None:
             situation_ids = value.split(',') 
-            for subject_id1 in situation_ids:
-                if subject_id1 in [str(row[0]) for row in related_situation_data]: 
-                    if subject_id1 not in situation_occurrences:
-                        situation_occurrences[subject_id1] = 1
+            for situation_id1 in situation_ids:
+                if situation_id1 in [str(row[0]) for row in related_situation_data]: 
+                    if situation_id1 not in situation_occurrences:
+                        situation_occurrences[situation_id1] = 1
                     else:
-                        situation_occurrences[subject_id1] += 1
+                        situation_occurrences[situation_id1] += 1
 
     return situation_occurrences
 
