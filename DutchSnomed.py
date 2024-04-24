@@ -45,6 +45,12 @@ class DutchSNOMEDCT():
                 u"123038009", u"254291000", u"105590001"
             ]
         ]
+    
+        #lichaamsstructuur, klinische bevinding, omgeving of geografische locatie, gebeurtenis, 
+        #Linkage concept, waarneembare entiteit, organisme, farmaceutisch/biologisch product
+        #fysische kracht, fysiek object, verrichting, kwalificatiewaarde
+        #gegevensobject, situatie met expliciete context, sociale context, speciaal concept
+        #Monster, gradering en schalen, substantie
 
     def search(self, span):
         self.SearchQuery = span
