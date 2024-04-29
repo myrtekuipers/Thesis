@@ -2,9 +2,9 @@ import sqlite3
 
 database = 'databases/hoesten.sqlite3'
 
-def connect_to_database(db_file):
-    conn = sqlite3.connect(db_file)
-    return conn.cursor()
+# def connect_to_database(db_file):
+#     conn = sqlite3.connect(db_file)
+#     return conn.cursor()
 
 def get_subject_info(cursor, source_subject):
     cursor.execute('''

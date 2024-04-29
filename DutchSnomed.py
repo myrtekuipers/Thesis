@@ -52,6 +52,19 @@ class DutchSNOMEDCT():
         #gegevensobject, situatie met expliciete context, sociale context, speciaal concept
         #Monster, gradering en schalen, substantie
 
+        #not used at the moment
+
+    def filter_levels(self):
+        return [
+            self[code] for code in [
+                u"404684003",
+                u"363787002",
+                u"71388002",
+            ]
+        ]
+
+        #klinische bevinding, waarneembare entiteit, verrichting
+
     def search(self, span):
         self.SearchQuery = span
 
