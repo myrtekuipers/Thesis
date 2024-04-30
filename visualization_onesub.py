@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-database = 'data/buikpijn.sqlite3'
+database = 'databases/buikpijn.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)

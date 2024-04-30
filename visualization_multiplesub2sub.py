@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 
 
-database = 'data/combined.sqlite3'
+database = 'databases/combinedcomplete.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)

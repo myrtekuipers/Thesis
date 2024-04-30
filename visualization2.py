@@ -56,17 +56,6 @@ def get_related_subjects_freq(task_ids, source_id):
         ''', (task_id,))
         related_subject_data = cur.fetchall()
 
-        # cur.execute('''
-        #     SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
-        #     FROM dblinks d
-        #     JOIN subjects sub ON d.subjectId = sub.subjectId
-        #     JOIN situations s ON d.situationId = s.situationId
-        #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        #     JOIN termcandidates tc ON sl.termId = tc.termId
-        #     WHERE tc.taskId = ?
-        # ''', (task_id,))
-        # related_subject_data = cur.fetchall()
-
         cur.execute('''
             SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
             FROM dblinks d
@@ -113,46 +102,40 @@ def add_node_labels():
     return node_labels
 
 def add_node_colors(source_ids):
-    # color_mapping = {
-    #     range(1, 30): 'blue',    # Symptomen en klachten
-    #     range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
-    #     range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
-    #     range(60, 62): 'black', # Uitslagen van onderzoek
-    #     62: 'cyan',            # Administratieve verrichtingen
-    #     range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
-    #     range(70, 100): 'red'   # Omschreven ziekten
-    # }
+    color_mapping = {
+        range(1, 30): 'blue',    # Symptomen en klachten
+        range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
+        range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
+        range(60, 62): 'black', # Uitslagen van onderzoek
+        62: 'cyan',            # Administratieve verrichtingen
+        range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
+        range(70, 100): 'red'   # Omschreven ziekten
+    }
+
     node_colors = []
     for node in G.nodes:
-        #node_colors = ['grey']
+        colors = []
         if node in source_ids:
-            node_colors.append('yellow')
+            colors.append('yellow')
         elif 'subjectICPC' in G.nodes[node]:
-            node_colors.append('orange')
-
-
-        # elif 'subjectICPC' in G.nodes[node]:
-        #     icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
-        #     for icpc_value in icpc_values:
-        #         if icpc_value == '': 
-        #             continue
-        #         for key, value in color_mapping.items():
-        #             if isinstance(key, range):
-        #                 if int(icpc_value[1:3]) in key:
-        #                     colors.append(value)
-        # if colors:
-        #     most_common_colors = Counter(colors).most_common() 
-        #     #if len(most_common_colors) > 1:
-        #     #   if 
-            
-        #     most_common_color = most_common_colors[0] 
-        #     print(most_common_color)
-        #     if len(most_common_colors) > 1:
-        #         node_colors.append('pink')  
-        #     else:
-        #         node_colors.append(most_common_color)  
-        # else:
-        #     node_colors.append('gray')  
+            icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
+            colors = [] 
+            for icpc_value in icpc_values:
+                if icpc_value == '': 
+                    continue
+                for key, value in color_mapping.items():
+                    if isinstance(key, range):
+                        if int(icpc_value[1:3]) in key:
+                            colors.append(value)
+        if colors:
+            most_common_colors = Counter(colors).most_common() 
+            most_common_color, count = most_common_colors[0] 
+            if len(most_common_colors) > 1:
+                node_colors.append('pink')  
+            else:
+                node_colors.append(most_common_color)  
+        else:
+            node_colors.append('gray') 
 
     return node_colors
 
@@ -181,7 +164,7 @@ def draw_graph(node_labels, node_colors):
     plt.close()
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst", "Uitstrijkje baarmoederhals"]
+    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn"]
 
     source_ids = []
     for source_subject in source_subjects:
@@ -192,6 +175,7 @@ def main():
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids)  
     draw_graph(node_labels, node_colors)
+
 
 if __name__ == '__main__':
     main()
