@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import Error 
 
-database = 'databases/uitstrijkje.sqlite3'
+database = 'databases/keelpijn.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -10,7 +10,7 @@ except Error as e:
 
 cur = conn.cursor()
 
-def get_subject_info(source_subject):
+def get_source_subject_info(source_subject):
     cur.execute('''
         SELECT subjectId, subjectTitle, subjectICPC
         FROM subjects 
@@ -21,43 +21,22 @@ def get_subject_info(source_subject):
 
     return subject_info_task
 
-def get_related_subjects():
+def get_related_subjects_freq(source_id):
     cur.execute('''
-        SELECT d.subjectId, s.subjectTitle, s.subjectICPC
+        SELECT d.subjectId, s.subjectTitle, s.subjectICPC,
+        COUNT(DISTINCT sl.snomedlinkId) AS occurrences
         FROM dblinks d
         JOIN subjects s ON d.subjectId = s.subjectId
-    ''')
-
-    related_subject_data = cur.fetchall()
-
-    return related_subject_data
-
-def get_related_subjects_freq(related_subject_data, source_id):
-    cur.execute('''
-        SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
-        FROM dblinks d
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        GROUP BY sl.snomedlinkId
+        GROUP BY d.subjectId;   
     ''')
 
-    results = cur.fetchall()
+    subject_occurrences = cur.fetchall()
 
-    subject_occurrences = {}
+    if source_id in [row[0] for row in subject_occurrences]:
+        subject_occurrences = [row for row in subject_occurrences if row[0] != source_id]
 
-    for row in results:
-        value = row[1]
-        if value is not None:
-            subject_ids = value.split(',') 
-            for subject_id1 in subject_ids:
-                if subject_id1 in [str(row[0]) for row in related_subject_data] and subject_id1 != str(source_id): 
-                    if subject_id1 not in subject_occurrences:
-                        subject_occurrences[subject_id1] = 1
-                    else:
-                        subject_occurrences[subject_id1] += 1
-
-    sorted_occurrences = sorted(subject_occurrences.items(), key=lambda x: x[1], reverse=True)
-
-    return sorted_occurrences
+    return subject_occurrences
 
 
 def print_results(subject_info_task, sorted_occurrences):
@@ -65,42 +44,27 @@ def print_results(subject_info_task, sorted_occurrences):
     print(f"Subject {source_id}: {subjectTitle} ({subjectICPC})")
     print("Related subjects:")
 
-    for subject_id, occurrences in sorted_occurrences:
-        cur.execute('''
-            SELECT subjectTitle, subjectICPC
-            FROM subjects
-            WHERE subjectId = ?
-        ''', (subject_id,))
-
-        subject_title, subject_icpc = cur.fetchone()
+    for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
         print(f"  - {subject_title} ({subject_icpc}) ({occurrences})")
 
 def save_results(subject_info_task, sorted_occurrences):
-    source_id, subjectTitle, subjectICPC = subject_info_task
-    with open('links/uitstrijkje_related.txt', 'w') as f:
+    _, subjectTitle, subjectICPC = subject_info_task
+    with open('links/acne_related.txt', 'w') as f:
         f.write(f"Subject: {subjectTitle} ({subjectICPC})\n")
         f.write("Related subjects:\n")
 
-        for subject_id, occurrences in sorted_occurrences:
-            cur.execute('''
-                SELECT subjectTitle, subjectICPC
-                FROM subjects
-                WHERE subjectId = ?
-            ''', (subject_id,))
-
-            subject_title, subject_icpc = cur.fetchone()
+        for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
             f.write(f"{subject_title} ({subject_icpc}) ({occurrences})\n")
 
 def main():
-    source_subject = "Uitstrijkje baarmoederhals"
+    source_subject = "Keelpijn"
                     #   "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst", "Uitstrijkje baarmoederhals"]
 
-    subject_info_task = get_subject_info(source_subject)
+    subject_info_task = get_source_subject_info(source_subject)
     source_id = subject_info_task[0]
-    related_subject_data = get_related_subjects()
-    subject_occurrences = get_related_subjects_freq(related_subject_data, source_id)
-    #print_results(subject_info_task, subject_occurrences)
-    save_results(subject_info_task, subject_occurrences)
+    subject_occurrences = get_related_subjects_freq(source_id)
+    print_results(subject_info_task, subject_occurrences)
+    #save_results(subject_info_task, subject_occurrences)
 
 if __name__ == '__main__':
     main()

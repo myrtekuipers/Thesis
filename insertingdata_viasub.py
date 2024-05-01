@@ -5,7 +5,7 @@ from DutchSnomed import *
 from DutchICPC import *
 from Mapping import *
 
-database = 'databases/combinedcomplete.sqlite3'
+database = 'databases/hoestenkeelpijn.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -96,7 +96,7 @@ def delete_all_tables():
     conn.commit()
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Pijn op de borst", "Uitstrijkje baarmoederhals"]
+    source_subjects = ["Hoesten", "Keelpijn"]
 
     process_tasks(source_subjects) 
     #delete_all_tables()

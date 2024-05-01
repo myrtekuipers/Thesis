@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 
-database = 'databases/buikpijn.sqlite3'
+database = 'databases/acne.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -15,7 +15,7 @@ cur = conn.cursor()
 
 G = nx.DiGraph()
 
-def get_subject_info(source_subject):
+def get_source_subject_info(source_subject):
     cur.execute('''
         SELECT subjectId, subjectTitle, subjectICPC
         FROM subjects 
@@ -30,56 +30,27 @@ def get_subject_info(source_subject):
 
     return subject_id
 
-def get_related_subjects():
+def get_related_subjects_freq(source_id):
     cur.execute('''
-        SELECT d.subjectId, sub.subjectTitle, sub.subjectICPC
+        SELECT d.subjectId, s.subjectTitle, s.subjectICPC,
+        COUNT(DISTINCT sl.snomedlinkId) AS occurrences
         FROM dblinks d
-        JOIN subjects sub ON d.subjectId = sub.subjectId
-    ''')
-    # cur.execute('''
-    #     SELECT s.subjectId, sub.subjectTitle, sub.subjectICPC
-    #     FROM dblinks d
-    #     JOIN subjects sub ON d.subjectId = sub.subjectId
-    #     JOIN situations s ON d.situationId = s.situationId
-    #     JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-    #     JOIN termcandidates tc ON sl.termId = tc.termId
-    # ''')
-    related_subject_data = cur.fetchall()
-
-    return related_subject_data
-
-def get_related_subjects_freq(related_subject_data):
-    cur.execute('''
-        SELECT sl.snomedlinkId, GROUP_CONCAT(DISTINCT d.subjectId) AS subject_ids
-        FROM dblinks d
+        JOIN subjects s ON d.subjectId = s.subjectId
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        GROUP BY sl.snomedlinkId
+        GROUP BY d.subjectId;   
     ''')
 
-    results = cur.fetchall()
+    subject_occurrences = cur.fetchall()
 
-    subject_occurrences = {}
-
-    for row in results:
-        value = row[1]
-        if value is not None:
-            subject_ids = value.split(',') 
-            for subject_id1 in subject_ids:
-                if subject_id1 in [str(row[0]) for row in related_subject_data]: # Checking if the subject_id is in the related_subject_data
-                    if subject_id1 not in subject_occurrences:
-                        subject_occurrences[subject_id1] = 1
-                    else:
-                        subject_occurrences[subject_id1] += 1
+    if source_id in [row[0] for row in subject_occurrences]:
+        subject_occurrences = [row for row in subject_occurrences if row[0] != source_id]
 
     return subject_occurrences
 
-def add_related_nodes_edges(related_data, subject_occurrences, subject_id):
-    for related_subject_id, related_subjectTitle, related_subjectICPC in related_data:
-        if subject_id != related_subject_id:  
+def add_related_nodes_edges(subject_occurrences, source_id):
+    for related_subject_id, related_subjectTitle, related_subjectICPC, occurrences in subject_occurrences:
             G.add_node(related_subject_id, subjectTitle=related_subjectTitle, subjectICPC=related_subjectICPC)
-            if str(related_subject_id) in subject_occurrences:
-                occurrences = subject_occurrences.get(str(related_subject_id))
-                G.add_edge(subject_id, related_subject_id, weight=occurrences)
+            G.add_edge(source_id, related_subject_id, weight=occurrences)
 
 def add_node_labels():
     node_labels = {}
@@ -96,58 +67,59 @@ def add_node_labels():
 def add_node_colors(subject_id):
     color_mapping = {
         range(1, 30): 'blue',    # Symptomen en klachten
-        range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
-        range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
-        range(60, 62): 'black', # Uitslagen van onderzoek
-        62: 'cyan',            # Administratieve verrichtingen
-        range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
+        # range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
+        # range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
+        # range(60, 62): 'black', # Uitslagen van onderzoek
+        # 62: 'cyan',            # Administratieve verrichtingen
+        # range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
         range(70, 100): 'red'   # Omschreven ziekten
     }
 
     node_colors = []
     for node in G.nodes:
-        color = 'gray'
+        colors = []
         if node == subject_id:
-            color = 'yellow'
-        elif 'subjectICPC' in G.nodes[node]:
+            colors.append('yellow')
+        else:
             icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
+            colors = [] 
             for icpc_value in icpc_values:
                 if icpc_value == '': 
                     continue
                 for key, value in color_mapping.items():
                     if isinstance(key, range):
                         if int(icpc_value[1:3]) in key:
-                            color = value
-        node_colors.append(color)
-        # if colors:
-        #     most_common_colors = Counter(colors).most_common() 
-        #     most_common_color = most_common_colors[0] 
-        #     if len(most_common_colors) > 1:
-        #         node_colors.append('pink')  
-        #     else:
-        #         node_colors.append(most_common_color)  
-        # else:
-        #     node_colors.append('gray') 
+                            colors.append(value)
+        if colors:
+            most_common_colors = Counter(colors).most_common() 
+            most_common_color,_ = most_common_colors[0] 
+            if len(most_common_colors) > 1:
+                node_colors.append('pink')  
+            else:
+                node_colors.append(most_common_color)  
+        else:
+            node_colors.append('gray') 
 
     return node_colors
 
 def add_legend():
     legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='blue', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='red', markersize=10)]
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='red', markersize=10),
+                    plt.Line2D([0], [0], marker='o', color='w', label='Combinatie van beiden', markerfacecolor='pink', markersize=10)]
 
     plt.legend(handles=legend_elements, loc='upper right')
 
-def draw_graph(node_labels):
+def draw_graph(node_labels, node_colors):
     pos = nx.spring_layout(G)
     plt.axis('off')
-    #add_legend()
+    add_legend()
     nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
-    nx.draw(G, pos, with_labels=False, node_size=1000, edge_color='gray', arrowsize=10)
+    nx.draw(G, pos, with_labels=False, node_size=1000, edge_color='gray', node_color = node_colors, arrowsize=10)
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Subject Relationships')
@@ -155,15 +127,14 @@ def draw_graph(node_labels):
     plt.close()
 
 def main():
-    source_subject = "Buikpijn"
+    source_subject = "Acne"
 
-    source_id = get_subject_info(source_subject)
-    related_subject_data = get_related_subjects()
-    subject_occurrences = get_related_subjects_freq(related_subject_data)
-    add_related_nodes_edges(related_subject_data, subject_occurrences, source_id)
+    source_id = get_source_subject_info(source_subject)
+    subject_occurrences = get_related_subjects_freq(source_id)
+    add_related_nodes_edges(subject_occurrences, source_id)
     node_labels = add_node_labels()
-    #node_colors = add_node_colors(source_id)
-    draw_graph(node_labels)
+    node_colors = add_node_colors(source_id)
+    draw_graph(node_labels, node_colors)
 
 if __name__ == '__main__':
     main()
