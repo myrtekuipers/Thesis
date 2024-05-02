@@ -37,7 +37,7 @@ def get_task_ids(source_id):
 
 def determine_mostcommon_range(subject_info_task):
     icpc_codes = subject_info_task[2].replace(" ", "").split(',')
-    ranges = [(0, 30), (70, 99)]
+    ranges = [(0, 29), (70, 99)]
 
     counts = defaultdict(int)
     for code in icpc_codes:
@@ -45,27 +45,32 @@ def determine_mostcommon_range(subject_info_task):
         for start, end in ranges:
             if start <= first_digits <= end:
                 counts[(start, end)] += 1
+            else:
+                continue
 
-    most_common_range = max(counts, key=counts.get)
+    max_count = max(counts.values())
+    most_common_ranges = [key for key, count in counts.items() if count == max_count]
 
-    return most_common_range
+    return most_common_ranges
 
 def determine_present_ranges(subject_info_task):
     icpc_codes = subject_info_task[2].replace(" ", "").split(',')
-    ranges = [(0, 30), (70, 99)]
+    ranges = [(0, 29), (70, 99)]
 
-    present_ranges = set()
+    present_ranges = []
 
     for code in icpc_codes:
         first_digits = int(code[1:3])
         for start, end in ranges:
             if start <= first_digits <= end:
-                present_ranges.add((start, end))
-
+                present_ranges.append((start, end))
+            else:
+                continue
+        
     return present_ranges
 
 
-def get_related_subjects_freq(task_ids, source_id, range):
+def get_related_subjects_freq(task_ids, source_id, icpc_range):    
     subject_occurrences = []
 
     for task_id in task_ids:
@@ -78,7 +83,7 @@ def get_related_subjects_freq(task_ids, source_id, range):
         JOIN subjects s ON d.subjectId = s.subjectId
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
         JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE tc.taskId = ?
+        WHERE tc.taskId = ? AND d.level = 0
         GROUP BY d.subjectId;   
         ''' , (task_id,))
 
@@ -87,7 +92,21 @@ def get_related_subjects_freq(task_ids, source_id, range):
         if source_id in [row[0] for row in results]:
             results = [row for row in results if row[0] != source_id]
 
-        subject_occurrences.extend(results)
+        if len(icpc_range) > 1: #if the source subject has both ranges, include all related subjects, only happens for present ranges
+            subject_occurrences.extend(results) 
+        else: #if there is only one range, filter out the subjects that do not have the same range
+            for row in results:
+                icpc_codes = row[2].replace(" ", "").split(",") 
+                start = icpc_range[0][0]
+                end = icpc_range[0][1] + 1
+                for icpc in icpc_codes:
+                    if icpc:
+                        icpc_digits = int(icpc[1:3])
+                        if int(icpc_digits) in range(start,end):
+                            subject_occurrences.append(row)
+                            break
+                        else:
+                            continue
 
         aggregated_data = {}
 
@@ -98,9 +117,10 @@ def get_related_subjects_freq(task_ids, source_id, range):
                 aggregated_data[subject_id] = {'title': title, 'icpc': icpc, 'frequency': frequency}
 
         aggregated_list = [(subject_id, data['title'], data['icpc'], data['frequency']) for subject_id, data in aggregated_data.items()]
+        sorted_occurrences = sorted(aggregated_list, key=lambda x: x[3], reverse=True)
 
 
-    return aggregated_list
+    return sorted_occurrences
 
 def print_results(subject_info_task, sorted_occurrences):
     source_id, subjectTitle, subjectICPC = subject_info_task
@@ -112,7 +132,7 @@ def print_results(subject_info_task, sorted_occurrences):
 
 def save_results(subject_info_task, sorted_occurrences):
     _, subjectTitle, subjectICPC = subject_info_task
-    with open('links/all_related1.txt', 'a') as f:
+    with open('links/all_related_filter1_level.txt', 'a') as f:
         f.write(f"\nSubject: {subjectTitle} ({subjectICPC})\n")
         f.write("Related subjects:\n")
 
@@ -130,7 +150,7 @@ def main():
 
         
         range = determine_mostcommon_range(subject_info_task)
-        range = determine_present_ranges(subject_info_task)
+        #range = determine_present_ranges(subject_info_task)
         
         subject_occurrences = get_related_subjects_freq(task_ids, source_id, range)
         #print_results(subject_info_task, subject_occurrences)
