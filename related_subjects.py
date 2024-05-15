@@ -83,7 +83,7 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
         JOIN subjects s ON d.subjectId = s.subjectId
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
         JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE tc.taskId = ? AND d.level = 0
+        WHERE tc.taskId = ? 
         GROUP BY d.subjectId;   
         ''' , (task_id,))
 
@@ -92,7 +92,7 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
         if source_id in [row[0] for row in results]:
             results = [row for row in results if row[0] != source_id]
 
-        if len(icpc_range) > 1: #if the source subject has both ranges, include all related subjects, only happens for present ranges
+        if len(set(icpc_range)) > 1: #if the source subject has both ranges, include all related subjects, only happens for present ranges
             subject_occurrences.extend(results) 
         else: #if there is only one range, filter out the subjects that do not have the same range
             for row in results:
@@ -132,7 +132,7 @@ def print_results(subject_info_task, sorted_occurrences):
 
 def save_results(subject_info_task, sorted_occurrences):
     _, subjectTitle, subjectICPC = subject_info_task
-    with open('links/all_related_filter1_level.txt', 'a') as f:
+    with open('links/filter2_a.txt', 'a') as f:
         f.write(f"\nSubject: {subjectTitle} ({subjectICPC})\n")
         f.write("Related subjects:\n")
 
@@ -141,17 +141,16 @@ def save_results(subject_info_task, sorted_occurrences):
         f.write("\n")
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Hoesten", "Keelpijn", "Gezond leven", "Diabetes type 2", "Problemen thuis", "Medicijnen bij ouderen", "Pijn op de borst", "Uitstrijkje baarmoederhals"]
+    source_subjects = ["Acne", "Buikpijn", "Gezond leven", "Hoesten", "Keelpijn", "Medicijnen bij ouderen", "Pijn op de borst", "Problemen thuis", "Uitstrijkje baarmoederhals"]
 
     for source_subject in source_subjects:
         subject_info_task = get_source_subject_info(source_subject)
         source_id = subject_info_task[0]
         task_ids = get_task_ids(source_id)
+        
+        range = determine_present_ranges(subject_info_task)
+        #range = determine_mostcommon_range(subject_info_task)
 
-        
-        range = determine_mostcommon_range(subject_info_task)
-        #range = determine_present_ranges(subject_info_task)
-        
         subject_occurrences = get_related_subjects_freq(task_ids, source_id, range)
         #print_results(subject_info_task, subject_occurrences)
         save_results(subject_info_task, subject_occurrences)
