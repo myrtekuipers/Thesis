@@ -165,3 +165,5 @@ class TermCandidate:
         self.similarities = np.array(
             [self._get_similariy(self.variations[self.match_variation], entity) for entity in entities])
 
+
+    
