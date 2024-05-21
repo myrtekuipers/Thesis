@@ -83,7 +83,7 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
         JOIN subjects s ON d.subjectId = s.subjectId
         JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
         JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE tc.taskId = ? 
+        WHERE tc.taskId = ?
         GROUP BY d.subjectId;   
         ''' , (task_id,))
 
@@ -92,7 +92,10 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
         if source_id in [row[0] for row in results]:
             results = [row for row in results if row[0] != source_id]
 
-        if len(set(icpc_range)) > 1: #if the source subject has both ranges, include all related subjects, only happens for present ranges
+        if not icpc_range: #if the source subject has no ranges, include all related subjects
+            subject_occurrences.extend(results)
+
+        elif len(set(icpc_range)) > 1: #if the source subject has both ranges, include all related subjects, only happens for present ranges
             subject_occurrences.extend(results) 
         else: #if there is only one range, filter out the subjects that do not have the same range
             for row in results:
@@ -122,22 +125,22 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
 
     return sorted_occurrences
 
-def print_results(subject_info_task, sorted_occurrences):
-    source_id, subjectTitle, subjectICPC = subject_info_task
-    print(f"Subject {source_id}: {subjectTitle} ({subjectICPC})")
-    print("Related subjects:")
+# def print_results(subject_info_task, sorted_occurrences):
+#     source_id, subjectTitle, subjectICPC = subject_info_task
+#     print(f"Subject {source_id}: {subjectTitle} ({subjectICPC})")
+#     print("Related subjects:")
 
-    for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
-        print(f"  - {subject_title} ({subject_icpc}) ({occurrences})")
+#     for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
+#         print(f"  - {subject_title} ({subject_icpc}) ({occurrences})")
 
 def save_results(subject_info_task, sorted_occurrences):
-    _, subjectTitle, subjectICPC = subject_info_task
-    with open('links/filter2_a.txt', 'a') as f:
-        f.write(f"\nSubject: {subjectTitle} ({subjectICPC})\n")
+    subjectid, subjectTitle, subjectICPC = subject_info_task
+    with open('links/filter5_a.txt', 'a') as f:
+        f.write(f"\nSubject: {subjectid} {subjectTitle} ({subjectICPC})\n")
         f.write("Related subjects:\n")
 
-        for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
-            f.write(f"{subject_title} ({subject_icpc}) ({occurrences})\n")
+        for subject_id, subject_title, subject_icpc, occurrences in sorted_occurrences:
+            f.write(f"{subject_id} {subject_title} ({subject_icpc}) ({occurrences})\n")
         f.write("\n")
 
 def main():
@@ -148,8 +151,8 @@ def main():
         source_id = subject_info_task[0]
         task_ids = get_task_ids(source_id)
         
-        range = determine_present_ranges(subject_info_task)
-        #range = determine_mostcommon_range(subject_info_task)
+        #range = determine_present_ranges(subject_info_task)
+        range = determine_mostcommon_range(subject_info_task)
 
         subject_occurrences = get_related_subjects_freq(task_ids, source_id, range)
         #print_results(subject_info_task, subject_occurrences)

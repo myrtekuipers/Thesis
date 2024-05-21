@@ -3,6 +3,7 @@ from sqlite3 import Error
 import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
+import re
 
 database = 'databases/combined.sqlite3'
 
@@ -27,61 +28,32 @@ def get_subject_info(source_subject):
 
     G.add_node(subject_id, subjectTitle=subjectTitle, subjectICPC=subjectICPC)
 
-    return subject_id
+    return subject_id, subjectTitle
 
-def get_task_ids(source_id):
-    cur.execute('''
-        SELECT t.taskId
-        FROM tasks t
-        JOIN situations s ON t.situationId = s.situationId
-        JOIN subjects sub ON s.subjectId = sub.subjectId 
-        WHERE sub.subjectId = ?
-    ''', (source_id,))
+def get_info_related_subjects(source_id, source_title, links):
+    subject_pattern = rf"Subject: {source_id} {re.escape(source_title)} \((.*?)\)"
 
-    task_ids = cur.fetchall()
+    subject_line = re.search(subject_pattern, links)
 
-    get_related_subjects_freq(task_ids, source_id)
+    if not subject_line:
+        return None, []
+    
+    start_pos = subject_line.end()
+    
+    end_pos = links.find('\nSubject:', start_pos)
+    if end_pos == -1:
+        end_pos = len(links)
+    
+    related_content = links[start_pos:end_pos].strip()
 
-def get_related_subjects_freq(task_ids, source_id):
-    subject_occurrences = []
+    print(related_content)
 
-    for task_id in task_ids:
-        task_id = task_id[0]
+    pattern = re.compile(r"(\d+) (.+?) \(([^()]+)\) \((\d+)\)")
+    related_subjects = re.findall(pattern, related_content)
 
-        cur.execute('''
-        SELECT d.subjectId, s.subjectTitle, s.subjectICPC,
-        COUNT(DISTINCT sl.snomedlinkId) AS occurrences
-        FROM dblinks d
-        JOIN subjects s ON d.subjectId = s.subjectId
-        JOIN snomedlinks sl ON d.snomedlinkId = sl.snomedlinkId
-        JOIN termcandidates tc ON sl.termId = tc.termId
-        WHERE tc.taskId = ?
-        GROUP BY d.subjectId;   
-        ''' , (task_id,))
-
-        results = cur.fetchall()
-
-        if source_id in [row[0] for row in results]:
-            results = [row for row in results if row[0] != source_id]
-
-        subject_occurrences.extend(results)
-
-        aggregated_data = {}
-
-        for subject_id, title, icpc, frequency in subject_occurrences:
-            if subject_id in aggregated_data:
-                aggregated_data[subject_id]['frequency'] += frequency
-            else:
-                aggregated_data[subject_id] = {'title': title, 'icpc': icpc, 'frequency': frequency}
-
-        aggregated_list = [(subject_id, data['title'], data['icpc'], data['frequency']) for subject_id, data in aggregated_data.items()]
-
-    add_related_nodes_edges(aggregated_list, source_id)
-
-def add_related_nodes_edges(subject_occurrences, source_id):
-    for related_subject_id, related_subjectTitle, related_subjectICPC, occurrences in subject_occurrences:
-            G.add_node(related_subject_id, subjectTitle=related_subjectTitle, subjectICPC=related_subjectICPC)
-            G.add_edge(source_id, related_subject_id, weight=occurrences)
+    for id, title, icpc, occurrences in related_subjects:
+        G.add_node(id, subjectTitle = title, subjectICPC = icpc)
+        G.add_edge(source_id, id, weight=int(occurrences))
 
 def add_node_labels():
     node_labels = {}
@@ -147,23 +119,11 @@ def add_legend():
 
 
 def draw_graph(node_labels, node_colors):
-    pos = nx.kamada_kawai_layout(G)
+    pos = nx.spring_layout(G)
     plt.axis('off')
     add_legend()
-    nx.draw_networkx_labels(G, 
-                            pos, 
-                            labels=node_labels, 
-                            font_size=8, 
-                            font_color='black')
-    
-    nx.draw(G, 
-            pos, 
-            with_labels=False, 
-            node_size=1000, 
-            node_color = node_colors, 
-            edge_color='gray', 
-            arrowsize=10)
-    
+    nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
+    nx.draw(G, pos, with_labels=False, node_size=1000, node_color = node_colors, edge_color='gray', arrowsize=10)
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
     plt.title('Subject Relationships')
@@ -171,16 +131,18 @@ def draw_graph(node_labels, node_colors):
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Keelpijn"]
+    source_subjects = ["Acne", "Buikpijn"]
+
+    with open('links/filter4_a.txt', 'r') as file:
+            links = file.read()
 
     source_ids = []
     for source_subject in source_subjects:
-        source_id = get_subject_info(source_subject)
+        source_id, source_title = get_subject_info(source_subject)
         source_ids.append(source_id)
-        get_task_ids(source_id)
-
+        get_info_related_subjects(source_id, source_title, links) 
     node_labels = add_node_labels()
-    node_colors = add_node_colors(source_ids)  
+    node_colors = add_node_colors(source_ids) 
     draw_graph(node_labels, node_colors)
 
 if __name__ == '__main__':
