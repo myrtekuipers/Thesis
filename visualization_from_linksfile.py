@@ -176,7 +176,7 @@ def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
                                  edge_labels=edge_labels, 
                                  font_color='red')
 
-    #add links_file_name to title
+
     plt.title(f'Subject Relationships {links_file_name}')
 
     plt.show()

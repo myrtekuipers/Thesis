@@ -142,7 +142,7 @@ class TermCandidate:
         
         if denominator == 0: return 0
 
-        termTokens = self.variation_tokens[self.match_variation]
+        termTokens = self.variation_tokens[self.match_variation] #no context --> only take into account term
         
         entityTokens = entity.all_tokens.difference(term.sent._.stopwords)
         nominator = len(termTokens.intersection(entityTokens))
