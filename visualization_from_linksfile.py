@@ -46,8 +46,6 @@ def get_info_related_subjects(source_id, source_title, links):
     
     related_content = links[start_pos:end_pos].strip()
 
-    print(related_content)
-
     pattern = re.compile(r"(\d+) (.+?) \(([^()]+)\) \((\d+)\)")
     related_subjects = re.findall(pattern, related_content)
 
@@ -117,23 +115,49 @@ def add_legend():
 
     plt.legend(handles=legend_elements, loc='upper right')
 
+def change_edge_width():
+    #with a dictionary comprehension
+    edge_width = {edge: G.edges[edge]['weight'] for edge in G.edges()}
+    return edge_width
 
-def draw_graph(node_labels, node_colors):
-    pos = nx.spring_layout(G)
+
+def draw_graph(node_labels, node_colors, edge_width):
+    pos = nx.shell_layout(G)
     plt.axis('off')
     add_legend()
-    nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=8, font_color='black')
-    nx.draw(G, pos, with_labels=False, node_size=1000, node_color = node_colors, edge_color='gray', arrowsize=10)
+
+    nx.draw_networkx_labels(G, 
+                            pos, 
+                            labels=node_labels, 
+                            font_size=8, 
+                            font_color='black')
+
+    nx.draw(G, 
+            pos, 
+            with_labels=False, 
+            node_color = node_colors, 
+            arrowsize=10)
+
+    nx.draw_networkx_edges(G,pos,
+                       edgelist = edge_width.keys(),
+                       width=list(edge_width.values()),
+                       edge_color='lightblue',
+                       alpha=0.6)
+    
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+    nx.draw_networkx_edge_labels(G, 
+                                 pos, 
+                                 edge_labels=edge_labels, 
+                                 font_color='red')
+
     plt.title('Subject Relationships')
     plt.show()
     plt.close()
 
 def main():
-    source_subjects = ["Keelpijn", "Hoesten"]
+    source_subjects = ["Acne"]
 
-    with open('links/filter0_a.txt', 'r') as file:
+    with open('links/filter2_a.txt', 'r') as file:
             links = file.read()
 
     source_ids = []
@@ -143,7 +167,8 @@ def main():
         get_info_related_subjects(source_id, source_title, links) 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    draw_graph(node_labels, node_colors)
+    edge_width = change_edge_width()
+    draw_graph(node_labels, node_colors, edge_width)
 
 if __name__ == '__main__':
     main()
