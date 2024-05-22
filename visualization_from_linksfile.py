@@ -116,7 +116,7 @@ def add_legend():
                      plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='orange', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Combinatie van beiden', markerfacecolor='pink', markersize=10)]
 
-    plt.legend(handles=legend_elements, loc='upper right')
+    plt.legend(handles=legend_elements, loc='lower left')
 
 def change_edge_width():
     edge_width = {edge: G.edges[edge]['weight'] for edge in G.edges()}
@@ -126,7 +126,7 @@ def change_edge_width():
 def improve_layout(pos, node_colors_dict):
     unique_colors = set(node_colors_dict.values())
     angs = np.linspace(0, 2*np.pi, 1+len(unique_colors))
-    rad = 2.0 # the higher, the more spread out the colors
+    rad = 3.0 # the higher, the more spread out the colors
     
     repos = []
     color_to_posx = {}
@@ -143,8 +143,8 @@ def improve_layout(pos, node_colors_dict):
             pos[node] += repos[posx - 1]
 
 
-def draw_graph(node_labels, node_colors_dict, edge_width):
-    pos = nx.circular_layout(G)
+def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
+    pos = nx.shell_layout(G)
     plt.axis('off')
     add_legend()
 
@@ -176,15 +176,19 @@ def draw_graph(node_labels, node_colors_dict, edge_width):
                                  edge_labels=edge_labels, 
                                  font_color='red')
 
-    plt.title('Subject Relationships')
+    #add links_file_name to title
+    plt.title(f'Subject Relationships {links_file_name}')
+
     plt.show()
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Keelpijn"]
+    source_subjects = ["Hoesten", "Pijn op de borst"]
 
-    with open('links/filter1_a.txt', 'r') as file:
-            links = file.read()
+    links_file_name = 'filter1_c'
+
+    with open(f'links/{links_file_name}.txt', 'r') as file:
+        links = file.read()
 
     source_ids = []
     for source_subject in source_subjects:
@@ -194,7 +198,7 @@ def main():
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
     edge_width = change_edge_width()
-    draw_graph(node_labels, node_colors, edge_width)
+    draw_graph(node_labels, node_colors, edge_width, links_file_name)
 
 if __name__ == '__main__':
     main()
