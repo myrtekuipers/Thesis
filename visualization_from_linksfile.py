@@ -4,6 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import Counter
 import re
+import numpy as np
 
 database = 'databases/combined.sqlite3'
 
@@ -56,75 +57,99 @@ def get_info_related_subjects(source_id, source_title, links):
 def add_node_labels():
     node_labels = {}
     for node in G.nodes:
-        label = f"{node}\n"
+        label = f"$\\bf{{{node}}}$\n"
         if 'subjectTitle' in G.nodes[node]:
             label += f"{G.nodes[node]['subjectTitle']}\n"
         if 'subjectICPC' in G.nodes[node]:
-            label += f"ICPC: {G.nodes[node]['subjectICPC']}\n"
+            label += f"{G.nodes[node]['subjectICPC']}\n"
         node_labels[node] = label
 
     return node_labels
 
 def add_node_colors(source_ids):
     color_mapping = {
-        range(1, 30): 'blue',    # Symptomen en klachten
+        range(1, 30): 'cyan',    # Symptomen en klachten
         # range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
         # range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
         # range(60, 62): 'black', # Uitslagen van onderzoek
         # 62: 'cyan',            # Administratieve verrichtingen
         # range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
-        range(70, 100): 'red'   # Omschreven ziekten
+        range(70, 100): 'orange'   # Omschreven ziekten
     }
 
-    node_colors = []
+    node_colors_dict = {}
     for node in G.nodes:
         colors = []
         if node in source_ids:
             colors.append('yellow')
         else:
-            icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",") 
-            colors = [] 
+            icpc_values = G.nodes[node]['subjectICPC'].replace(" ", "").split(",")
             for icpc_value in icpc_values:
-                if icpc_value == '': 
+                if icpc_value == '':
                     continue
                 for key, value in color_mapping.items():
                     if isinstance(key, range):
                         if int(icpc_value[1:3]) in key:
                             colors.append(value)
+                    elif icpc_value == key:  # Assuming key could also be a specific value
+                        colors.append(value)
+                        
         if colors:
-            most_common_colors = Counter(colors).most_common() 
-            most_common_color,_ = most_common_colors[0] 
+            most_common_colors = Counter(colors).most_common()
+            most_common_color, _ = most_common_colors[0]
             if len(most_common_colors) > 1:
-                node_colors.append('pink')  
+                node_colors_dict[node] = 'pink'
             else:
-                node_colors.append(most_common_color)  
+                node_colors_dict[node] = most_common_color
         else:
-            node_colors.append('gray') 
+            node_colors_dict[node] = 'gray'
 
-    return node_colors
+    return node_colors_dict
 
 def add_legend():
-    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='blue', markersize=10),
+    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='cyan', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='red', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='orange', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Combinatie van beiden', markerfacecolor='pink', markersize=10)]
 
     plt.legend(handles=legend_elements, loc='upper right')
 
 def change_edge_width():
-    #with a dictionary comprehension
     edge_width = {edge: G.edges[edge]['weight'] for edge in G.edges()}
     return edge_width
 
 
-def draw_graph(node_labels, node_colors, edge_width):
-    pos = nx.shell_layout(G)
+def improve_layout(pos, node_colors_dict):
+    unique_colors = set(node_colors_dict.values())
+    angs = np.linspace(0, 2*np.pi, 1+len(unique_colors))
+    rad = 2.0 # the higher, the more spread out the colors
+    
+    repos = []
+    color_to_posx = {}
+    for i, color in enumerate(unique_colors):
+        if i > 0:
+            offset_x = rad * np.cos(angs[i])
+            offset_y = rad * np.sin(angs[i])
+            repos.append(np.array([offset_x, offset_y]))
+        color_to_posx[color] = i
+
+    for node, color in node_colors_dict.items():
+        posx = color_to_posx[color]
+        if posx > 0:
+            pos[node] += repos[posx - 1]
+
+
+def draw_graph(node_labels, node_colors_dict, edge_width):
+    pos = nx.circular_layout(G)
     plt.axis('off')
     add_legend()
+
+    improve_layout(pos, node_colors_dict)
+    node_colors = [node_colors_dict[node] for node in G.nodes()]
 
     nx.draw_networkx_labels(G, 
                             pos, 
@@ -138,7 +163,8 @@ def draw_graph(node_labels, node_colors, edge_width):
             node_color = node_colors, 
             arrowsize=10)
 
-    nx.draw_networkx_edges(G,pos,
+    nx.draw_networkx_edges(G,
+                           pos,
                        edgelist = edge_width.keys(),
                        width=list(edge_width.values()),
                        edge_color='lightblue',
@@ -155,9 +181,9 @@ def draw_graph(node_labels, node_colors, edge_width):
     plt.close()
 
 def main():
-    source_subjects = ["Acne"]
+    source_subjects = ["Hoesten", "Keelpijn"]
 
-    with open('links/filter2_a.txt', 'r') as file:
+    with open('links/filter1_a.txt', 'r') as file:
             links = file.read()
 
     source_ids = []
