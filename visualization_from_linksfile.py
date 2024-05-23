@@ -153,9 +153,25 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
 
     #edge_width_curved = change_edge_width(curved_edges)
 
-def check_edges(links_list):
-    for link in links_list:
-        pass #first make a list of all "Zie ook" related subjects 
+def check_zieook(links_list, source_id, source_title):
+    # with open('links/zie ook.txt', 'r') as file:
+    #     zieook = file.read()
+
+    # source_subject_pattern = rf"{source_id} {re.escape(source_title)}"
+
+    # subject_line = re.search(source_subject_pattern, zieook)
+
+    # #take all subjects that are related to the source subject
+    # if subject_line:
+    #     start_pos = subject_line.end()
+    #     end_pos = zieook.find('\n', start_pos)
+    #     if end_pos == -1:
+    #         end_pos = len(zieook)
+
+    #     related_content = zieook[start_pos:end_pos].strip()
+
+    #     print(related_content)
+    pass 
     
 def draw_edges(pos, source_ids, node_colors_dict):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
@@ -241,7 +257,7 @@ def main():
         source_id, source_title = get_subject_info(source_subject)
         source_ids.append(source_id)
         links_list = get_info_related_subjects(source_id, source_title, links_list, links)
-        check_edges(links_list)
+        check_zieook(links_list, source_id, source_title)
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 

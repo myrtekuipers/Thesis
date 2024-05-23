@@ -1,0 +1,86 @@
+11087 Acne 
+Talgkliercyste
+Steenpuist 
+De pil
+Zwangerschap voorkomen
+
+11672 Buikpijn
+Buikpijn bij kinderen
+Maagklachten
+Verstopping bij volwassenen
+Diarree
+Overgeven
+Coeliakie
+Blaasontsteking
+Voedsel-allergie
+Zwanger
+
+11630 Gezond leven
+Gezond eten
+Stoppen met roken
+Alcohol
+Stress
+Overgewicht bij volwassenen
+Bezoek aan de huisarts
+Depressie
+Slecht slapen
+Vallen voorkomen en veilig wonen
+
+11374 Hoesten
+Verkouden
+Keelpijn
+Griep
+Stoppen met roken
+Astma bij volwassenen
+COPD
+Bloed ophoesten
+Longontsteking
+Pseudokroep
+Corona
+Ziek kind
+Koorts bij kinderen
+Koorts
+
+11387 Keelpijn 
+Verkouden
+Griep
+Longontsteking
+Ziekte van Pfeiffer
+Stoppen met roken
+Roodvonk
+
+11709 Medicijnen bij ouderen
+Medicijnen en veilig rijden
+Snel dingen vergeten
+Vallen voorkomen en veilig wonen
+Botontkalking
+Schoenen en uw voeten
+
+12021 Pijn op de borst
+Hartkramp
+Hartkloppingen
+Paniekaanvallen
+Angst
+Stress
+Klaplong
+Longontsteking
+Gordelroos
+Syndroom van Tietze
+
+12267 Problemen thuis 
+Stress
+Psychische klachten als je jong bent
+Angst
+Angst bij kinderen
+Angst- en piekerstoornis
+Alcohol
+Drugs
+Psychosociale problemen
+Psychische klachten bij volwassenen
+Posttraumatische stressstoornis
+
+11230 Uitstrijkje baarmoederhals
+Bloed uit de vagina
+Vocht uit de vagina
+Baarmoederhalskanker
+Behandelingen van de baarmoederhals 
