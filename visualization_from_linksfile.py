@@ -27,7 +27,10 @@ def get_subject_info(source_subject):
     subject_info_task = cur.fetchone()  
     subject_id, subjectTitle, subjectICPC = subject_info_task
 
-    G.add_node(subject_id, subjectTitle=subjectTitle, subjectICPC=subjectICPC)
+    subject_id = str(subject_id)
+
+    if not G.has_node(subject_id):
+        G.add_node(subject_id, subjectTitle=subjectTitle, subjectICPC=subjectICPC)
 
     return subject_id, subjectTitle
 
@@ -51,7 +54,9 @@ def get_info_related_subjects(source_id, source_title, links):
     related_subjects = re.findall(pattern, related_content)
 
     for id, title, icpc, occurrences in related_subjects:
-        G.add_node(id, subjectTitle = title, subjectICPC = icpc)
+        if not G.has_node(id):
+            G.add_node(id, subjectTitle=title, subjectICPC=icpc)
+        
         G.add_edge(source_id, id, weight=int(occurrences))
 
 def add_node_labels():
@@ -122,7 +127,6 @@ def change_edge_width():
     edge_width = {edge: G.edges[edge]['weight'] for edge in G.edges()}
     return edge_width
 
-
 def improve_layout(pos, node_colors_dict):
     unique_colors = set(node_colors_dict.values())
     angs = np.linspace(0, 2*np.pi, 1+len(unique_colors))
@@ -154,7 +158,7 @@ def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
     nx.draw_networkx_labels(G, 
                             pos, 
                             labels=node_labels, 
-                            font_size=8, 
+                            font_size=7, 
                             font_color='black')
 
     nx.draw(G, 
@@ -168,7 +172,7 @@ def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
                        edgelist = edge_width.keys(),
                        width=list(edge_width.values()),
                        edge_color='lightblue',
-                       alpha=0.6)
+                       alpha=0.45)
     
     edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, 
@@ -183,9 +187,9 @@ def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Pijn op de borst"]
+    source_subjects = ["Hoesten", "Keelpijn"]
 
-    links_file_name = 'filter1_c'
+    links_file_name = 'filter1_a'
 
     with open(f'links/{links_file_name}.txt', 'r') as file:
         links = file.read()
@@ -194,7 +198,8 @@ def main():
     for source_subject in source_subjects:
         source_id, source_title = get_subject_info(source_subject)
         source_ids.append(source_id)
-        get_info_related_subjects(source_id, source_title, links) 
+        get_info_related_subjects(source_id, source_title, links)
+
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
     edge_width = change_edge_width()
