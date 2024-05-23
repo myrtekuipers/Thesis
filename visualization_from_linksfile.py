@@ -128,8 +128,22 @@ def change_edge_width(edges):
     edge_width = {edge: G.edges[edge]['weight'] for edge in edges}
     return edge_width
 
-def draw_edges(pos, node_colors_dict):
+def draw_source_edges(G, pos, source_ids, curved_edges):
+    for i in range(len(source_ids)):
+        for j in range(len(source_ids)):
+            if i != j:
+                if G.has_edge(source_ids[i], source_ids[j]):
+                    nx.draw_networkx_edges(G, pos, edgelist=[(source_ids[i], source_ids[j])], width=2, edge_color='green', alpha=0.6)
+                elif G.has_edge(source_ids[j], source_ids[i]):
+                    nx.draw_networkx_edges(G, pos, edgelist=[(source_ids[j], source_ids[i])], width=2, edge_color='green', alpha=0.6)
 
+    edge_width_curved = change_edge_width(curved_edges)
+    arc_rad = 0.1
+    nx.draw_networkx_edges(G, pos, edgelist=edge_width_curved.keys(), width=list(edge_width_curved.values()), edge_color='green', alpha = 0.6, connectionstyle=f'arc3, rad = {arc_rad}')
+    curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
+    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
+
+def draw_edges(pos, source_ids, node_colors_dict):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
     straight_edges = list(set(G.edges()) - set(curved_edges))
 
@@ -141,17 +155,13 @@ def draw_edges(pos, node_colors_dict):
             node_color = node_colors, 
             edgelist = straight_edges,
             arrowsize=10)
-
+    
     edge_width_straight = change_edge_width(straight_edges)
     nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='lightblue', alpha = 0.4)
     straight_edge_labels = {edge: G.edges[edge]['weight'] for edge in straight_edges if G.edges[edge]['weight'] != 1}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False)
 
-    edge_width_curved = change_edge_width(curved_edges)
-    arc_rad = 0.1
-    nx.draw_networkx_edges(G, pos, edgelist=edge_width_curved.keys(), width=list(edge_width_curved.values()), edge_color='green', alpha = 0.6, connectionstyle=f'arc3, rad = {arc_rad}')
-    curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
-    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
+    draw_source_edges(G, pos, source_ids, curved_edges)
 
 def draw_nodes(pos, node_labels, node_colors_dict):
     node_colors = [node_colors_dict[node] for node in G.nodes()]
@@ -187,7 +197,7 @@ def improve_layout(pos, node_colors_dict):
         if posx > 0:
             pos[node] += repos[posx - 1]
 
-def draw_graph(node_labels, node_colors_dict, links_file_name):
+def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
     pos = nx.circular_layout(G)
     plt.axis('off')
 
@@ -195,7 +205,7 @@ def draw_graph(node_labels, node_colors_dict, links_file_name):
 
     draw_nodes(pos, node_labels, node_colors_dict)
     
-    draw_edges(pos, node_colors_dict)
+    draw_edges(pos, source_ids, node_colors_dict)
 
     plt.title(f'Subject Relationships {links_file_name}')
     add_legend()
@@ -203,7 +213,7 @@ def draw_graph(node_labels, node_colors_dict, links_file_name):
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Keelpijn"]
+    source_subjects = ["Hoesten", "Keelpijn", "Pijn op de borst"]
 
     links_file_name = 'filter1_a'
 
@@ -218,8 +228,7 @@ def main():
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    #edge_width = change_edge_width()
-    draw_graph(node_labels, node_colors, links_file_name)
+    draw_graph(source_ids, node_labels, node_colors, links_file_name)
 
 if __name__ == '__main__':
     main()
