@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import re
 import numpy as np
+import my_networkx as my_nx
 
 database = 'databases/combined.sqlite3'
 
@@ -123,14 +124,14 @@ def add_legend():
 
     plt.legend(handles=legend_elements, loc='lower left')
 
-def change_edge_width():
-    edge_width = {edge: G.edges[edge]['weight'] for edge in G.edges()}
+def change_edge_width(edges):
+    edge_width = {edge: G.edges[edge]['weight'] for edge in edges}
     return edge_width
 
 def improve_layout(pos, node_colors_dict):
     unique_colors = set(node_colors_dict.values())
     angs = np.linspace(0, 2*np.pi, 1+len(unique_colors))
-    rad = 3.0 # the higher, the more spread out the colors
+    rad = 3.0
     
     repos = []
     color_to_posx = {}
@@ -146,9 +147,8 @@ def improve_layout(pos, node_colors_dict):
         if posx > 0:
             pos[node] += repos[posx - 1]
 
-
-def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
-    pos = nx.shell_layout(G)
+def draw_graph(node_labels, node_colors_dict, links_file_name):
+    pos = nx.circular_layout(G)
     plt.axis('off')
     add_legend()
 
@@ -161,25 +161,45 @@ def draw_graph(node_labels, node_colors_dict, edge_width, links_file_name):
                             font_size=7, 
                             font_color='black')
 
-    nx.draw(G, 
-            pos, 
-            with_labels=False, 
-            node_color = node_colors, 
-            arrowsize=10)
+    #draw nodes
+    nx.draw_networkx_nodes(G,
+                            pos,
+                            node_color=node_colors,
+                            node_size=500,
+                            alpha=0.8)
 
-    nx.draw_networkx_edges(G,
-                           pos,
-                       edgelist = edge_width.keys(),
-                       width=list(edge_width.values()),
-                       edge_color='lightblue',
-                       alpha=0.45)
+    # nx.draw(G, 
+    #         pos, 
+    #         with_labels=False, 
+    #         node_color = node_colors, 
+    #         arrowsize=10)
     
-    edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
-    nx.draw_networkx_edge_labels(G, 
-                                 pos, 
-                                 edge_labels=edge_labels, 
-                                 font_color='red')
+    curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
+    
+    straight_edges = list(set(G.edges()) - set(curved_edges))
 
+    edge_width_straight = change_edge_width(straight_edges)
+
+    edge_width_curved = change_edge_width(curved_edges)
+
+    nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='black', alpha = 0.4)
+    #change_edge_width(straight_edges)
+    arc_rad = 0.25
+    nx.draw_networkx_edges(G, pos, edgelist=edge_width_curved.keys(), width=list(edge_width_curved.values()), edge_color='black', alpha = 0.4, connectionstyle=f'arc3, rad = {arc_rad}')
+    #change_edge_width(curved_edges)
+
+    # nx.draw_networkx_edges(G,
+    #                        pos,
+    #                    edgelist = edge_width.keys(),
+    #                    width=list(edge_width.values()),
+    #                    edge_color='lightblue',
+    #                    alpha=0.45)
+    
+    #edge_labels = {(u, v): str(G.edges[u, v]['weight']) for u, v in G.edges() if G.edges[u, v]['weight'] != 1}
+    curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
+    straight_edge_labels = {edge: G.edges[edge]['weight'] for edge in straight_edges if G.edges[edge]['weight'] != 1}
+    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False)
 
     plt.title(f'Subject Relationships {links_file_name}')
 
@@ -202,8 +222,8 @@ def main():
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    edge_width = change_edge_width()
-    draw_graph(node_labels, node_colors, edge_width, links_file_name)
+    #edge_width = change_edge_width()
+    draw_graph(node_labels, node_colors, links_file_name)
 
 if __name__ == '__main__':
     main()
