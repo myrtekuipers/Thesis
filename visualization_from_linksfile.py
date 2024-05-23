@@ -35,7 +35,7 @@ def get_subject_info(source_subject):
 
     return subject_id, subjectTitle
 
-def get_info_related_subjects(source_id, source_title, links):
+def get_info_related_subjects(source_id, source_title, links_list, links):
     subject_pattern = rf"Subject: {source_id} {re.escape(source_title)} \((.*?)\)"
 
     subject_line = re.search(subject_pattern, links)
@@ -57,8 +57,11 @@ def get_info_related_subjects(source_id, source_title, links):
     for id, title, icpc, occurrences in related_subjects:
         if not G.has_node(id):
             G.add_node(id, subjectTitle=title, subjectICPC=icpc)
-        
+            
+        links_list.append((source_id, id))
         G.add_edge(source_id, id, weight=int(occurrences))
+    
+    return links_list
 
 def add_node_labels():
     node_labels = {}
@@ -132,17 +135,28 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
     for i in range(len(source_ids)):
         for j in range(len(source_ids)):
             if i != j:
-                if G.has_edge(source_ids[i], source_ids[j]):
-                    nx.draw_networkx_edges(G, pos, edgelist=[(source_ids[i], source_ids[j])], width=2, edge_color='green', alpha=0.6)
+                if G.has_edge(source_ids[i], source_ids[j]) and G.has_edge(source_ids[j], source_ids[i]):
+                    edge = (source_ids[i], source_ids[j])
+                    width = G.edges[edge]['weight']
+                    arc_rad = 0.1
+                    nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha = 0.4, connectionstyle=f'arc3, rad = {arc_rad}')
+                    curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
+                    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad, font_size = 7)
+                elif G.has_edge(source_ids[i], source_ids[j]):
+                    edge = (source_ids[i], source_ids[j])
+                    width = G.edges[edge]['weight']
+                    nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha=0.4)
                 elif G.has_edge(source_ids[j], source_ids[i]):
-                    nx.draw_networkx_edges(G, pos, edgelist=[(source_ids[j], source_ids[i])], width=2, edge_color='green', alpha=0.6)
+                    edge = (source_ids[j], source_ids[i])
+                    width = G.edges[edge]['weight']
+                    nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha=0.4)
 
-    edge_width_curved = change_edge_width(curved_edges)
-    arc_rad = 0.1
-    nx.draw_networkx_edges(G, pos, edgelist=edge_width_curved.keys(), width=list(edge_width_curved.values()), edge_color='green', alpha = 0.6, connectionstyle=f'arc3, rad = {arc_rad}')
-    curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
-    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
+    #edge_width_curved = change_edge_width(curved_edges)
 
+def check_edges(links_list):
+    for link in links_list:
+        pass #first make a list of all "Zie ook" related subjects 
+    
 def draw_edges(pos, source_ids, node_colors_dict):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
     straight_edges = list(set(G.edges()) - set(curved_edges))
@@ -159,7 +173,7 @@ def draw_edges(pos, source_ids, node_colors_dict):
     edge_width_straight = change_edge_width(straight_edges)
     nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='lightblue', alpha = 0.4)
     straight_edge_labels = {edge: G.edges[edge]['weight'] for edge in straight_edges if G.edges[edge]['weight'] != 1}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False)
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False, font_size = 7)
 
     draw_source_edges(G, pos, source_ids, curved_edges)
 
@@ -198,6 +212,7 @@ def improve_layout(pos, node_colors_dict):
             pos[node] += repos[posx - 1]
 
 def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
+
     pos = nx.circular_layout(G)
     plt.axis('off')
 
@@ -213,18 +228,20 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
     plt.close()
 
 def main():
-    source_subjects = ["Hoesten", "Keelpijn", "Pijn op de borst"]
+    source_subjects = ["Hoesten", "Keelpijn"]
 
-    links_file_name = 'filter1_a'
+    links_file_name = 'filter2_c'
 
     with open(f'links/{links_file_name}.txt', 'r') as file:
         links = file.read()
 
     source_ids = []
+    links_list = []
     for source_subject in source_subjects:
         source_id, source_title = get_subject_info(source_subject)
         source_ids.append(source_id)
-        get_info_related_subjects(source_id, source_title, links)
+        links_list = get_info_related_subjects(source_id, source_title, links_list, links)
+        check_edges(links_list)
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
