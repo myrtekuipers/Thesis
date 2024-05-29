@@ -116,14 +116,14 @@ def add_node_colors(source_ids):
     return node_colors_dict
 
 def add_legend():
-    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen en klachten', markerfacecolor='cyan', markersize=10),
+    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen and complaints', markerfacecolor='cyan', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
                     #  plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Omschreven ziekten', markerfacecolor='orange', markersize=10),
-                     plt.Line2D([0], [0], marker='o', color='w', label='Combinatie van beiden', markerfacecolor='pink', markersize=10)]
+                     plt.Line2D([0], [0], marker='o', color='w', label='Predefined diseases', markerfacecolor='orange', markersize=10),
+                     plt.Line2D([0], [0], marker='o', color='w', label='Combination of both categories', markerfacecolor='pink', markersize=10)]
 
     plt.legend(handles=legend_elements, loc='lower left')
 
@@ -238,7 +238,7 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
     
     draw_edges(pos, source_ids, node_colors_dict)
 
-    plt.title(f'Subject Relationships {links_file_name}')
+    plt.title(f'Subject Relationships using {links_file_name}')
     add_legend()
     plt.show()
     plt.close()
@@ -246,7 +246,7 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
 def main():
     source_subjects = ["Hoesten", "Keelpijn"]
 
-    links_file_name = 'filter2_c'
+    links_file_name = 'filter1_a'
 
     with open(f'links/{links_file_name}.txt', 'r') as file:
         links = file.read()
