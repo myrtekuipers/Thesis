@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2024-06-05">
+    <creator>NetworkX 3.2.1</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="node">
+      <attribute id="0" title="subjectTitle" type="string" />
+      <attribute id="1" title="subjectICPC" type="string" />
+    </attributes>
+    <nodes>
+      <node id="11374" label="11374">
+        <attvalues>
+          <attvalue for="0" value="Hoesten" />
+          <attvalue for="1" value="R05" />
+        </attvalues>
+      </node>
+      <node id="12215" label="12215">
+        <attvalues>
+          <attvalue for="0" value="Sarcoïdose" />
+          <attvalue for="1" value="R83, R05" />
+        </attvalues>
+      </node>
+      <node id="12217" label="12217">
+        <attvalues>
+          <attvalue for="0" value="Sepsis" />
+          <attvalue for="1" value="A03, A02" />
+        </attvalues>
+      </node>
+      <node id="11154" label="11154">
+        <attvalues>
+          <attvalue for="0" value="Koortsstuip" />
+          <attvalue for="1" value="N07, A03" />
+        </attvalues>
+      </node>
+      <node id="11256" label="11256">
+        <attvalues>
+          <attvalue for="0" value="Astma bij volwassenen" />
+          <attvalue for="1" value="R96, R02" />
+        </attvalues>
+      </node>
+      <node id="11666" label="11666">
+        <attvalues>
+          <attvalue for="0" value="Koorts bij kinderen" />
+          <attvalue for="1" value="A03" />
+        </attvalues>
+      </node>
+      <node id="14077" label="14077">
+        <attvalues>
+          <attvalue for="0" value="Hondsdolheid" />
+          <attvalue for="1" value="S13, A77" />
+        </attvalues>
+      </node>
+      <node id="11171" label="11171">
+        <attvalues>
+          <attvalue for="0" value="Zwanger worden" />
+          <attvalue for="1" value="A97, W15, Y10" />
+        </attvalues>
+      </node>
+      <node id="11298" label="11298">
+        <attvalues>
+          <attvalue for="0" value="COPD" />
+          <attvalue for="1" value="R95, R91, R02" />
+        </attvalues>
+      </node>
+      <node id="11387" label="11387">
+        <attvalues>
+          <attvalue for="0" value="Keelpijn" />
+          <attvalue for="1" value="R76, R72, R21.01" />
+        </attvalues>
+      </node>
+      <node id="11594" label="11594">
+        <attvalues>
+          <attvalue for="0" value="Allergie" />
+          <attvalue for="1" value="A12" />
+        </attvalues>
+      </node>
+      <node id="12595" label="12595">
+        <attvalues>
+          <attvalue for="0" value="Astma bij kinderen" />
+          <attvalue for="1" value="R96, R02" />
+        </attvalues>
+      </node>
+      <node id="11660" label="11660">
+        <attvalues>
+          <attvalue for="0" value="Longontsteking" />
+          <attvalue for="1" value="R81" />
+        </attvalues>
+      </node>
+      <node id="11440" label="11440">
+        <attvalues>
+          <attvalue for="0" value="Verkouden" />
+          <attvalue for="1" value="R74.01, R83" />
+        </attvalues>
+      </node>
+      <node id="12276" label="12276">
+        <attvalues>
+          <attvalue for="0" value="RS-virus" />
+          <attvalue for="1" value="A77" />
+        </attvalues>
+      </node>
+      <node id="11113" label="11113">
+        <attvalues>
+          <attvalue for="0" value="Zwangerschap voorkomen" />
+          <attvalue for="1" value="W11, W10, W12, W14, S96" />
+        </attvalues>
+      </node>
+      <node id="11193" label="11193">
+        <attvalues>
+          <attvalue for="0" value="De pil" />
+          <attvalue for="1" value="W11" />
+        </attvalues>
+      </node>
+      <node id="11657" label="11657">
+        <attvalues>
+          <attvalue for="0" value="Roodvonk" />
+          <attvalue for="1" value="R72" />
+        </attvalues>
+      </node>
+      <node id="14929" label="14929">
+        <attvalues>
+          <attvalue for="0" value="Groep A streptokok" />
+          <attvalue for="1" value="S76, R72" />
+        </attvalues>
+      </node>
+      <node id="11737" label="11737">
+        <attvalues>
+          <attvalue for="0" value="ALS" />
+          <attvalue for="1" value="N99.01" />
+        </attvalues>
+      </node>
+      <node id="11771" label="11771">
+        <attvalues>
+          <attvalue for="0" value="Myasthenia gravis" />
+          <attvalue for="1" value="N99.02" />
+        </attvalues>
+      </node>
+      <node id="11773" label="11773">
+        <attvalues>
+          <attvalue for="0" value="Narcolepsie" />
+          <attvalue for="1" value="N99" />
+        </attvalues>
+      </node>
+      <node id="12674" label="12674">
+        <attvalues>
+          <attvalue for="0" value="Slikproblemen" />
+          <attvalue for="1" value="D21" />
+        </attvalues>
+      </node>
+      <node id="12812" label="12812">
+        <attvalues>
+          <attvalue for="0" value="Spierziekte Duchenne" />
+          <attvalue for="1" value="N99" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="11374" target="12215" id="0" weight="46" />
+      <edge source="11374" target="12217" id="1" weight="5" />
+      <edge source="11374" target="11154" id="2" weight="4" />
+      <edge source="11374" target="11256" id="3" weight="4" />
+      <edge source="11374" target="11666" id="4" weight="4" />
+      <edge source="11374" target="14077" id="5" weight="2" />
+      <edge source="11374" target="11171" id="6" weight="1" />
+      <edge source="11374" target="11298" id="7" weight="1" />
+      <edge source="11374" target="11387" id="8" weight="1" />
+      <edge source="11374" target="11594" id="9" weight="1" />
+      <edge source="11374" target="12595" id="10" weight="1" />
+      <edge source="11387" target="11154" id="11" weight="6" />
+      <edge source="11387" target="11666" id="12" weight="6" />
+      <edge source="11387" target="12217" id="13" weight="6" />
+      <edge source="11387" target="11374" id="14" weight="6" />
+      <edge source="11387" target="11660" id="15" weight="6" />
+      <edge source="11387" target="12215" id="16" weight="6" />
+      <edge source="11387" target="11440" id="17" weight="2" />
+      <edge source="11387" target="12276" id="18" weight="2" />
+      <edge source="11387" target="11113" id="19" weight="1" />
+      <edge source="11387" target="11193" id="20" weight="1" />
+      <edge source="11387" target="11657" id="21" weight="1" />
+      <edge source="11387" target="14929" id="22" weight="1" />
+      <edge source="11387" target="11737" id="23" weight="1" />
+      <edge source="11387" target="11771" id="24" weight="1" />
+      <edge source="11387" target="11773" id="25" weight="1" />
+      <edge source="11387" target="12674" id="26" weight="1" />
+      <edge source="11387" target="12812" id="27" weight="1" />
+    </edges>
+  </graph>
+</gexf>

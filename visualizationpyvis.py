@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import re
 import numpy as np
-import my_networkx as my_nx
 from pyvis.network import Network
 
 database = 'databases/combined.sqlite3'
@@ -79,11 +78,6 @@ def add_node_labels():
 def add_node_colors(source_ids):
     color_mapping = {
         range(1, 30): 'cyan',    # Symptomen en klachten
-        # range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
-        # range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
-        # range(60, 62): 'black', # Uitslagen van onderzoek
-        # 62: 'cyan',            # Administratieve verrichtingen
-        # range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
         range(70, 100): 'orange'   # Omschreven ziekten
     }
 
@@ -118,11 +112,6 @@ def add_node_colors(source_ids):
 
 def add_legend():
     legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen and complaints', markerfacecolor='cyan', markersize=10),
-                    #  plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
-                    #  plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
-                    #  plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
-                    #  plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
-                    #  plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Predefined diseases', markerfacecolor='orange', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Combination of both categories', markerfacecolor='pink', markersize=10)]
 
@@ -142,7 +131,7 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
                     arc_rad = 0.1
                     nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha = 0.4, connectionstyle=f'arc3, rad = {arc_rad}')
                     curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
-                    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad, font_size = 7)
+                    nx.draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad, font_size = 7)
                 elif G.has_edge(source_ids[i], source_ids[j]):
                     edge = (source_ids[i], source_ids[j])
                     width = G.edges[edge]['weight']
@@ -152,28 +141,6 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
                     width = G.edges[edge]['weight']
                     nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha=0.4)
 
-    #edge_width_curved = change_edge_width(curved_edges)
-
-def check_zieook(links_list, source_id, source_title):
-    # with open('links/zie ook.txt', 'r') as file:
-    #     zieook = file.read()
-
-    # source_subject_pattern = rf"{source_id} {re.escape(source_title)}"
-
-    # subject_line = re.search(source_subject_pattern, zieook)
-
-    # #take all subjects that are related to the source subject
-    # if subject_line:
-    #     start_pos = subject_line.end()
-    #     end_pos = zieook.find('\n', start_pos)
-    #     if end_pos == -1:
-    #         end_pos = len(zieook)
-
-    #     related_content = zieook[start_pos:end_pos].strip()
-
-    #     print(related_content)
-    pass 
-    
 def draw_edges(pos, source_ids, node_colors_dict):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
     straight_edges = list(set(G.edges()) - set(curved_edges))
@@ -258,21 +225,23 @@ def main():
         source_id, source_title = get_subject_info(source_subject)
         source_ids.append(source_id)
         links_list = get_info_related_subjects(source_id, source_title, links_list, links)
-        check_zieook(links_list, source_id, source_title)
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
     draw_graph(source_ids, node_labels, node_colors, links_file_name)
 
-    #download the graph for gephi
-    #nx.write_gexf(G, 'graph.gexf')
-
+    # Convert NetworkX graph to PyVis network
     net = Network(notebook=True)
 
-    # Convert NetworkX graph to PyVis network
-    net.from_nx(G)
+    # Transfer node attributes to PyVis
+    for node, data in G.nodes(data=True):
+        net.add_node(node, label=node, title=data.get('subjectTitle', ''), color=node_colors[node])
 
-    # Show the graph
+    # Transfer edges to PyVis
+    for source, target, data in G.edges(data=True):
+        net.add_edge(source, target, value=data['weight'], title=str(data['weight']))
+
+    # Show the graph in PyVis
     net.show("graph.html")
 
 if __name__ == '__main__':
