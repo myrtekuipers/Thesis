@@ -230,18 +230,14 @@ def main():
     node_colors = add_node_colors(source_ids) 
     draw_graph(source_ids, node_labels, node_colors, links_file_name)
 
-    # Convert NetworkX graph to PyVis network
     net = Network(notebook=True)
 
-    # Transfer node attributes to PyVis
     for node, data in G.nodes(data=True):
         net.add_node(node, label=node, title=data.get('subjectTitle', ''), color=node_colors[node])
 
-    # Transfer edges to PyVis
     for source, target, data in G.edges(data=True):
         net.add_edge(source, target, value=data['weight'], title=str(data['weight']))
 
-    # Show the graph in PyVis
     net.show("graph.html")
 
 if __name__ == '__main__':

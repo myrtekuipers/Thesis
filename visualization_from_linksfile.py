@@ -244,6 +244,8 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
     plt.show()
     plt.close()
 
+    return G
+
 def main():
     source_subjects = ["Hoesten", "Keelpijn"]
 
@@ -262,18 +264,12 @@ def main():
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    draw_graph(source_ids, node_labels, node_colors, links_file_name)
+    G = draw_graph(source_ids, node_labels, node_colors, links_file_name)
 
     #download the graph for gephi
     #nx.write_gexf(G, 'graph.gexf')
 
-    net = Network(notebook=True)
-
-    # Convert NetworkX graph to PyVis network
-    net.from_nx(G)
-
-    # Show the graph
-    net.show("graph.html")
+    nx.write_graphml(G, "network.graphml")
 
 if __name__ == '__main__':
     main()
