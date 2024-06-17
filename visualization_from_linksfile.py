@@ -69,7 +69,8 @@ def add_node_labels():
     for node in G.nodes:
         label = f"$\\bf{{{node}}}$\n"
         if 'subjectTitle' in G.nodes[node]:
-            label += f"$\\bf{{{G.nodes[node]['subjectTitle']}}}$\n"
+            title = G.nodes[node]['subjectTitle']
+            label += f"$\\bf{{{title}}}$\n".replace(" ", "\\ ")
         if 'subjectICPC' in G.nodes[node]:
             label += f"{G.nodes[node]['subjectICPC']}\n"
         node_labels[node] = label
@@ -152,26 +153,17 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
                     width = G.edges[edge]['weight']
                     nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha=0.4)
 
-    #edge_width_curved = change_edge_width(curved_edges)
-
 
 def draw_edges(pos, source_ids, node_colors_dict):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
     straight_edges = list(set(G.edges()) - set(curved_edges))
 
-    node_colors = [node_colors_dict[node] for node in G.nodes()]
-
-    nx.draw(G, 
-            pos, 
-            with_labels=False, 
-            node_color = node_colors, 
-            edgelist = straight_edges,
-            arrowsize=10)
-    
     edge_width_straight = change_edge_width(straight_edges)
-    nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='lightblue', alpha = 0.4)
+    
+    nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='purple', alpha = 0.4)
+    
     straight_edge_labels = {edge: G.edges[edge]['weight'] for edge in straight_edges if G.edges[edge]['weight'] != 1}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False, font_size = 7)
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels, rotate=False, font_size=7)
 
     draw_source_edges(G, pos, source_ids, curved_edges)
 
@@ -220,7 +212,7 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
     
     draw_edges(pos, source_ids, node_colors_dict)
 
-    plt.title(f'Subject Relationships using {links_file_name}')
+    #plt.title(f'Subject Relationships using {links_file_name}')
     add_legend()
     plt.show()
     plt.close()
@@ -244,12 +236,7 @@ def main():
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    G = draw_graph(source_ids, node_labels, node_colors, links_file_name)
-
-    #download the graph for gephi
-    #nx.write_gexf(G, 'graph.gexf')
-
-    nx.write_graphml(G, "network.graphml")
+    draw_graph(source_ids, node_labels, node_colors, links_file_name)
 
 if __name__ == '__main__':
     main()
