@@ -1,11 +1,11 @@
 import sqlite3
 from sqlite3 import Error
 from EL import EntityLinking
-from DutchSnomed import *
+#from DutchSnomed import *
 from DutchICPC import *
-from Mapping import *
+from dbCreation.Mapping import *
 
-database = 'databases/combined.sqlite3'
+database = 'databases/combined1.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -70,8 +70,6 @@ def process_tasks(source_subjects):
                                         subjectId = None
                                         level = None
                                     
-                                    #icpc term does now correspond to the code that was searched for, and if the more general code resulted in a situation, the icpc code (and term) in that row is still the specific code that was searched for, maybe change that?
-                                    #or only change term? because the more general code is easily accessible from the specific code and then one level up. But the term could be different
                                     content3 = (last_row_id, code, level, icpcTerm, situationId, subjectId)
                                     sql = ''' INSERT OR IGNORE INTO DBLinks(snomedlinkId, icpc, level, icpcTerm, situationId, subjectId)
                                             VALUES(?,?,?,?,?,?) '''
@@ -96,11 +94,9 @@ def delete_all_tables():
     conn.commit()
 
 def main():
-    source_subjects = ["Acne", "Buikpijn", "Gezond leven","Hoesten", "Keelpijn", "Medicijnen bij ouderen", "Pijn op de borst", "Problemen thuis", "Uitstrijkje baarmoederhals"]
+    source_subjects = ["Acne", "Buikpijn"]
 
     process_tasks(source_subjects) 
-    #delete_all_tables()
-
 
 if __name__ == '__main__':
     main()

@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from collections import Counter
 import re
 import numpy as np
-from pyvis.network import Network
+import my_networkx as my_nx
 
-database = 'databases/combined.sqlite3'
+database = 'databases/combined1.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -66,9 +66,9 @@ def get_info_related_subjects(source_id, source_title, links_list, links):
 def add_node_labels():
     node_labels = {}
     for node in G.nodes:
-        label = f"$\\bf{{{node}}}$\n"
         if 'subjectTitle' in G.nodes[node]:
-            label += f"{G.nodes[node]['subjectTitle']}\n"
+            title = G.nodes[node]['subjectTitle']
+            label = f"$\\bf{{{title}}}$\n".replace(" ", "\\ ")
         if 'subjectICPC' in G.nodes[node]:
             label += f"{G.nodes[node]['subjectICPC']}\n"
         node_labels[node] = label
@@ -78,6 +78,11 @@ def add_node_labels():
 def add_node_colors(source_ids):
     color_mapping = {
         range(1, 30): 'cyan',    # Symptomen en klachten
+        # range(30, 50): 'orange',    # Diagnostische/preventieve verrichtingen
+        # range(50, 60): 'green',  # Medicatie/therapeutische verrichtingen
+        # range(60, 62): 'black', # Uitslagen van onderzoek
+        # 62: 'cyan',            # Administratieve verrichtingen
+        # range(63, 70): 'purple', # Verwijzingen/andere verrichtingen
         range(70, 100): 'orange'   # Omschreven ziekten
     }
 
@@ -95,7 +100,7 @@ def add_node_colors(source_ids):
                     if isinstance(key, range):
                         if int(icpc_value[1:3]) in key:
                             colors.append(value)
-                    elif icpc_value == key:  # Assuming key could also be a specific value
+                    elif icpc_value == key: 
                         colors.append(value)
                         
         if colors:
@@ -111,7 +116,12 @@ def add_node_colors(source_ids):
     return node_colors_dict
 
 def add_legend():
-    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptomen and complaints', markerfacecolor='cyan', markersize=10),
+    legend_elements = [plt.Line2D([0], [0], marker='o', color='w', label='Symptoms and complaints', markerfacecolor='cyan', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Diagnostische/preventieve verrichtingen', markerfacecolor='orange', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Medicatie/therapeutische verrichtingen', markerfacecolor='green', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Uitslagen van onderzoek', markerfacecolor='black', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Administratieve verrichtingen', markerfacecolor='cyan', markersize=10),
+                    #  plt.Line2D([0], [0], marker='o', color='w', label='Verwijzingen/andere verrichtingen', markerfacecolor='purple', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Predefined diseases', markerfacecolor='orange', markersize=10),
                      plt.Line2D([0], [0], marker='o', color='w', label='Combination of both categories', markerfacecolor='pink', markersize=10)]
 
@@ -131,7 +141,7 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
                     arc_rad = 0.1
                     nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha = 0.4, connectionstyle=f'arc3, rad = {arc_rad}')
                     curved_edge_labels = {edge: G.edges[edge]['weight'] for edge in curved_edges if G.edges[edge]['weight'] != 1}
-                    nx.draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad, font_size = 7)
+                    my_nx.my_draw_networkx_edge_labels(G, pos, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad, font_size = 7)
                 elif G.has_edge(source_ids[i], source_ids[j]):
                     edge = (source_ids[i], source_ids[j])
                     width = G.edges[edge]['weight']
@@ -141,23 +151,17 @@ def draw_source_edges(G, pos, source_ids, curved_edges):
                     width = G.edges[edge]['weight']
                     nx.draw_networkx_edges(G, pos, edgelist=[edge], width=width, edge_color='green', alpha=0.4)
 
-def draw_edges(pos, source_ids, node_colors_dict):
+
+def draw_edges(pos, source_ids):
     curved_edges = [edge for edge in G.edges() if reversed(edge) in G.edges()]
     straight_edges = list(set(G.edges()) - set(curved_edges))
 
-    node_colors = [node_colors_dict[node] for node in G.nodes()]
-
-    nx.draw(G, 
-            pos, 
-            with_labels=False, 
-            node_color = node_colors, 
-            edgelist = straight_edges,
-            arrowsize=10)
-    
     edge_width_straight = change_edge_width(straight_edges)
-    nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='lightblue', alpha = 0.4)
+    
+    nx.draw_networkx_edges(G, pos, edgelist=edge_width_straight.keys(), width=list(edge_width_straight.values()), edge_color='purple', alpha = 0.4)
+    
     straight_edge_labels = {edge: G.edges[edge]['weight'] for edge in straight_edges if G.edges[edge]['weight'] != 1}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels,rotate=False, font_size = 7)
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=straight_edge_labels, rotate=False, font_size=7)
 
     draw_source_edges(G, pos, source_ids, curved_edges)
 
@@ -195,7 +199,7 @@ def improve_layout(pos, node_colors_dict):
         if posx > 0:
             pos[node] += repos[posx - 1]
 
-def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
+def draw_graph(source_ids, node_labels, node_colors_dict):
 
     pos = nx.circular_layout(G)
     plt.axis('off')
@@ -204,12 +208,13 @@ def draw_graph(source_ids, node_labels, node_colors_dict, links_file_name):
 
     draw_nodes(pos, node_labels, node_colors_dict)
     
-    draw_edges(pos, source_ids, node_colors_dict)
+    draw_edges(pos, source_ids)
 
-    plt.title(f'Subject Relationships using {links_file_name}')
     add_legend()
     plt.show()
     plt.close()
+
+    return G
 
 def main():
     source_subjects = ["Hoesten", "Keelpijn"]
@@ -228,17 +233,7 @@ def main():
 
     node_labels = add_node_labels()
     node_colors = add_node_colors(source_ids) 
-    draw_graph(source_ids, node_labels, node_colors, links_file_name)
-
-    net = Network(notebook=True)
-
-    for node, data in G.nodes(data=True):
-        net.add_node(node, label=node, title=data.get('subjectTitle', ''), color=node_colors[node])
-
-    for source, target, data in G.edges(data=True):
-        net.add_edge(source, target, value=data['weight'], title=str(data['weight']))
-
-    net.show("graph.html")
+    draw_graph(source_ids, node_labels, node_colors)
 
 if __name__ == '__main__':
     main()

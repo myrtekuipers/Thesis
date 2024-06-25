@@ -18,7 +18,7 @@ class ICPCDutch:
             cur.execute(sql, (code,))
             result = cur.fetchone()
             if result:
-                return result[0]  # Return the text corresponding to the code
+                return result[0]  
             else:
                 return None 
         except Error as e:
@@ -48,10 +48,10 @@ class ICPCDutch:
             if results:
                 return results
             else:
-                return None  # Code not found
+                return None  
         except Error as e:
             print("Error while querying the database:", e)
-            return None  # Return None in case of error
+            return None 
 
 
 if __name__ == "__main__":

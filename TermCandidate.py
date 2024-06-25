@@ -1,5 +1,5 @@
 from DutchSnomed import DutchSNOMEDCT, SNOMEDDescription
-from DutchICD10 import ICD10Dutch, ICD10Concept
+#from DutchICD10 import ICD10Dutch, ICD10Concept
 from itertools import groupby
 import numpy as np
 from toolz import unique

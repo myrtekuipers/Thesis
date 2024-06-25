@@ -2,7 +2,7 @@ import sqlite3 as sql_module
 import sys, os, os.path
 from dbCreation.Mapping import *
 from nltk.tokenize import word_tokenize
-from DutchICD10 import *
+#from DutchICD10 import *
 
 from toolz import unique
 
@@ -117,7 +117,7 @@ class SNOMEDDescription():
         self._set_lemmatized(r[3])
         self._set_tokenized()
         self.span = search_query
-        self.icd10 = None
+        #self.icd10 = None
         self.guidelines = None
         #self.ConceptSpacy = nlp(self.Term)
 
@@ -266,11 +266,11 @@ class SNOMEDDescription():
 
         self.all_tokens = self.tokens.union(self.tokens_lemma)
 
-    def get_icd10(self):
-        if self.icd10 == None:
-            self.icd10 = Mapping().SNOMED2ICD(self.ConceptId)
+    # def get_icd10(self):
+    #     if self.icd10 == None:
+    #         self.icd10 = Mapping().SNOMED2ICD(self.ConceptId)
 
-        return self.icd10
+    #     return self.icd10
 
     def get_guidelines(self):
         if self.icd10 == None:

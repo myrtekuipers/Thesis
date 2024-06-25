@@ -1,5 +1,5 @@
 from DutchSnomed import DutchSNOMEDCT
-from DutchICD10 import ICD10Dutch
+#from DutchICD10 import ICD10Dutch
 from TermCandidate import TermCandidate
 
 import re
