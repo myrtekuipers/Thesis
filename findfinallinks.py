@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error 
 from collections import defaultdict
 
-database = 'databases/combined.sqlite3'
+database = ''
 
 try: 
     conn = sqlite3.connect(database)

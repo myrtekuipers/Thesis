@@ -5,7 +5,7 @@ from EL import EntityLinking
 from DutchICPC import *
 from dbCreation.Mapping import *
 
-database = 'databases/combined1.sqlite3'
+database = ''
 
 try: 
     conn = sqlite3.connect(database)

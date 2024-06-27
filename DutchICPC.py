@@ -12,7 +12,7 @@ class ICPCDutch:
     def search(self, code):
         sql = '''SELECT finalcodes.tekst FROM finalcodes WHERE finalcodes.code = ?'''
         try:
-            database = r"/Users/myrtekuipers/Documents/AIforHealth/Thesis/Thesis/data/icpc.sqlite3"
+            database = r"icpc.sqlite3"
             conn = sqlite3.connect(database)
             cur = conn.cursor()
             cur.execute(sql, (code,))
