@@ -11,7 +11,7 @@ After this, an SQLite database should be created from these terminologies, to fa
 ## Credits
 The EntityLinking method used in this project is developed by dr.ir. Majud Mohammadi, available at [here](https://github.com/Majeed7/EntityLinking). It is adapted for this specific project.
 
-To improve the visualization, curved edges needed to be drawn, based on the following [script](https://stackoverflow.com/questions/22785849/drawing-multiple-edges-between-two-nodes-with-networkx).
+To improve the visualization, curved edges needed to be drawn, based on the following [script](https://stackoverflow.com/questions/22785849/drawing-multiple-edges-between-two-nodes-with-networkx), found in `my_networkx.py`.
 
 ## Visualization
 The file `visualization.py` contains a script to create a disease network, to provide a more intuitive understanding of the results. 
