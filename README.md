@@ -1,5 +1,5 @@
 # Master's Thesis
-This repository contains source files for my thesis at the VU, titled "Enhancing Platform Navigability at [...]: Improving Information Hierarchy through Entity Linking".
+This repository contains source files for my thesis at the VU, titled "Enhancing Platform Navigability at Thuisarts: Improving Information Hierarchy through Entity Linking".
 
 ## Description
 This package includes a method to automatically find related medical information for a certain disease, symptom or sign, using entity linking with medical knowledge bases SNOMED and ICPC, resulting in an interconnected network of related information. 
