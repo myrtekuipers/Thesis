@@ -2,3 +2,11 @@
 \data
 \__pycache__
 \databases
+\EL.py
+\flask_app.py
+\setup.py
+\TermCandidate.py
+\test.py
+\api
+\links
+\dbCreation

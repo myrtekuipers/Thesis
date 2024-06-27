@@ -7,7 +7,7 @@ import re
 import numpy as np
 import my_networkx as my_nx
 
-database = 'databases/combined1.sqlite3'
+database = 'databases/combined.sqlite3'
 
 try: 
     conn = sqlite3.connect(database)
@@ -217,9 +217,9 @@ def draw_graph(source_ids, node_labels, node_colors_dict):
     return G
 
 def main():
-    source_subjects = ["Hoesten", "Keelpijn"]
+    source_subjects = ["Hoesten"]
 
-    links_file_name = 'filter1_a'
+    links_file_name = 'filter0_a'
 
     with open(f'links/{links_file_name}.txt', 'r') as file:
         links = file.read()

@@ -125,14 +125,6 @@ def get_related_subjects_freq(task_ids, source_id, icpc_range):
 
     return sorted_occurrences
 
-# def print_results(subject_info_task, sorted_occurrences):
-#     source_id, subjectTitle, subjectICPC = subject_info_task
-#     print(f"Subject {source_id}: {subjectTitle} ({subjectICPC})")
-#     print("Related subjects:")
-
-#     for _, subject_title, subject_icpc, occurrences in sorted_occurrences:
-#         print(f"  - {subject_title} ({subject_icpc}) ({occurrences})")
-
 def save_results(subject_info_task, sorted_occurrences):
     subjectid, subjectTitle, subjectICPC = subject_info_task
     with open('links/filter5_a.txt', 'a') as f:
